@@ -1,0 +1,3 @@
+[submodule "genericUtils"]
+	path = genericUtils
+	url = ssh://git@gitlab.cern.ch:7999/brendlin/genericUtils.git
