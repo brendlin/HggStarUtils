@@ -51,3 +51,10 @@ You can run the script using the following commands:
 Note that `--bkgs` is a comma-separated list of files that you want to run over. The output
 files will have the same name as the input files, with "_pico.root" at the end, and stored
 in the "yystar_output" directory in this case.
+
+**plottrees.py** (genericUtils) - Description and Instructions
+==================
+
+An example of how to use this script, using a conf file for Zmumu validation as an example (data15+16 vs mc16a), is below:
+
+    plottrees.py --config plottrees_ZmumuyValidationConf.py --bkgs %Sherpa_CT10%mumugamma%r9364%.root --data ysy001.data16.%.root,ysy001.data15.p3083_p3402.root --fb 36.2 --log --signal %gamstargam%r9364%.root
