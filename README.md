@@ -58,3 +58,26 @@ in the "yystar_output" directory in this case.
 An example of how to use this script, using a conf file for Zmumu validation as an example (data15+16 vs mc16a), is below:
 
     plottrees.py --config plottrees_ZmumuyValidationConf.py --bkgs %Sherpa_CT10%mumugamma%r9364%.root --data ysy001.data16.%.root,ysy001.data15.p3083_p3402.root --fb 36.2 --log --signal %gamstargam%r9364%.root
+
+**cutcomparisons.py** (genericUtils) - Description and Instructions
+==================
+
+This macro offers a way to compare different cut selection. Right now it only works for --signal MC.
+To use it, make a config file and define inside a list called "cutcomparisons", e.g. to compare
+different channels:
+
+    cutcomparisons = [
+        ['#mu#mu#gamma'      ,'HGamEventInfoAuxDyn.yyStarChannel == 1']
+        ['ee#gamma resolved' ,'HGamEventInfoAuxDyn.yyStarChannel == 2']
+        ['ee#gamma merged'   ,'HGamEventInfoAuxDyn.yyStarChannel == 3']
+        ['ee#gamma ambiguous','HGamEventInfoAuxDyn.yyStarChannel == 4']
+        ]
+
+Note that the first element of the list corresponds to the name of the selection, and the subsequent
+cuts are applied as usual.
+Then run e.g. the following:
+
+    cutcomparisons.py --signal %gamstargam%r9364%.root --config plottrees_compareChannels.py
+
+The cuts defined in the "cuts" option can/will still be applied on top, as a preselection to the
+cuts specified in "cutcomparisons".
