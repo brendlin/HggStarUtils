@@ -52,6 +52,12 @@ Note that `--bkgs` is a comma-separated list of files that you want to run over.
 files will have the same name as the input files, with "_pico.root" at the end, and stored
 in the "yystar_output" directory in this case.
 
+There is a data conf file set up for very small picoXaods, for e.g. running workspaces - to run it, do:
+
+      cd testarea
+      ln -s /path/to/HggStarUtils/data/makePicoXaod_dataConf.py .
+      makePicoXaod.py --config makePicoXaod_dataConf.py --data data%.root --outdir yystar_output
+
 **plottrees.py** (genericUtils) - Description and Instructions
 ==================
 
