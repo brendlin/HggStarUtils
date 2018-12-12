@@ -83,7 +83,7 @@ Note that the first element of the list corresponds to the name of the selection
 cuts are applied as usual.
 Then run e.g. the following:
 
-    cutcomparisons.py --signal %gamstargam%r9364%.root --config plottrees_compareChannels.py
+    cutcomparisons.py --signal %gamstargam%r9364%.root --config cutcomparisons_Channels.py
 
 The cuts defined in the "cuts" option can/will still be applied on top, as a preselection to the
 cuts specified in "cutcomparisons".
