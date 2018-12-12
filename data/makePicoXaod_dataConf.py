@@ -9,7 +9,7 @@ variables = [
 cuts = [
     'HGamEventInfoAuxDyn.cutFlow > 21', # e.g. everything except zmass and llg mass (ysy002)
     # replace with HGamEventInfoAuxDyn.isPassedEventSelection in ysy003
-    'HGamEventInfoAuxDyn.m_ll < 45000 || HGamEventInfoAuxDyn.yyStarChannel > 2', # cut if resolved
+    'HGamEventInfoAuxDyn.m_ll < 45000',
     '105000 < HGamEventInfoAuxDyn.m_lly && HGamEventInfoAuxDyn.m_lly < 160000',
     ]
 
