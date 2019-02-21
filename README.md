@@ -63,7 +63,7 @@ There is a data conf file set up for very small picoXaods, for e.g. running work
 
 An example of how to use this script, using a conf file for Zmumu validation as an example (data15+16 vs mc16a), is below:
 
-    plottrees.py --config plottrees_ZmumuyValidationConf.py --bkgs %Sherpa_CT10%mumugamma%r9364%.root --data ysy001.data16.%.root,ysy001.data15.p3083_p3402.root --fb 36.2 --log --signal %gamstargam%r9364%.root
+    plottrees.py --config plottrees_ZyFSR_ValidationConf.py --bkgs mc16a.%Sherpa_CT10_%.root --signal mc16a.3%gamstargam%.root --data data15%.root,data16%.root --fb 36.2 --ratio --log
 
 **cutcomparisons.py** (genericUtils) - Description and Instructions
 ==================

@@ -13,7 +13,7 @@ class ChannelEnum :
 ###
 # Change this to check out different channels:
 ###
-channel = ChannelEnum.MERGED_DIELECTRON
+channel = ChannelEnum.DIMUON
 
 
 leptonObj = 'Muons' if channel == ChannelEnum.DIMUON else 'Electrons'
