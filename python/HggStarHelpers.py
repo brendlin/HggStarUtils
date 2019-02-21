@@ -58,3 +58,26 @@ def weightscale_hyystar(tfile,is_h015d=False) :
     # add 1000. for matching our fb lumi to the MxAOD cross section.
     #print 1000. * DxAOD / float( xAOD * Ntuple_DxAOD )
     return 1000. * DxAOD / float( xAOD * Ntuple_DxAOD )
+
+def SherpaKfactor1p3(tfile) :
+    Sherpa_NLO = ['301535','301536','301899','301900','301901','301902','301903','301904']
+    checkSherpa = list(a in tfile.GetName() for a in Sherpa_NLO)
+    if True in checkSherpa :
+        print '%s (Sherpa) will be scaled by a factor of 1.3'%(tfile.GetName())
+        return 1.3
+
+    return 1
+
+def SF_80fb(tfile) :
+    mc16a = 3219.56 + 32965.3
+    mc16d = 44307.4
+
+    if 'mc16a' in tfile.GetName() :
+        print '%s (mc16a) will be scaled by a factor of %.2f / %.2f'%(tfile.GetName(),mc16a,mc16a+mc16d)
+        return mc16a / (mc16a + mc16d)
+
+    if 'mc16d' in tfile.GetName() :
+        print '%s (mc16d) will be scaled by a factor of %.2f / %.2f'%(tfile.GetName(),mc16d,mc16a+mc16d)
+        return mc16d / (mc16a + mc16d)
+
+    return 1
