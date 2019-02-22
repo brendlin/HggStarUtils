@@ -80,10 +80,11 @@ if channel != ChannelEnum.MERGED_DIELECTRON :
             'HGamEventInfoAuxDyn.m_ll/1000. > 10.', # lly generator cut
             'HGamEventInfoAuxDyn.m_lly/1000. > 80.', # Closer to our SR
             ]
-    if region == REGION.SR :
-        cuts += [
-            'HGamEventInfoAuxDyn.isPassedEventSelection', # our SR cut
-            ]
+
+if region == REGION.SR :
+    cuts += [
+        'HGamEventInfoAuxDyn.isPassedEventSelection', # our SR cut
+        ]
 
 
 blindcut = [
@@ -111,11 +112,11 @@ if region == REGION.SR :
         variables.append( 'HGamEventInfoAuxDyn.deltaR_ll' )
         variables.append( 'HGamEventInfoAuxDyn.pt_ll/1000.' )
         variables.append( 'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly' )
+        variables.append( 'HGamGSFTrackParticlesAuxDyn.pt[0]/1000.' )
+        variables.append( 'HGamGSFTrackParticlesAuxDyn.pt[1]/1000.' )
 
     if channel == ChannelEnum.MERGED_DIELECTRON :
         variables.append( 'HGamElectronsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly' )
-
-variables = ['HGamEventInfoAuxDyn.m_lly/1000.']
 
 histformat = {
     'HGamEventInfoAuxDyn.m_ll/1000.':[100,0,120,'m_{ll} [GeV]'],
@@ -131,6 +132,8 @@ histformat = {
     'fabs(HGamGSFTrackParticlesAuxDyn.z0[0]-HGamGSFTrackParticlesAuxDyn.z0[1])':[100,0,3,'|#Delta^{}Z_{0}| [mm]'],
     'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly':[100,0,1,'p^{ll}_{T}/m_{ll#gamma}'],
     'HGamEventInfoAuxDyn.pt_ll/1000.':[100,0,200,'p^{ll}_{T} [GeV]'],
+    'HGamGSFTrackParticlesAuxDyn.pt[0]/1000.':[100,0,100,'p^{trk0}_{T} [GeV]'],
+    'HGamGSFTrackParticlesAuxDyn.pt[1]/1000.':[100,0,30,'p^{trk1}_{T} [GeV]'],
     }
 
 if region == REGION.SR :
