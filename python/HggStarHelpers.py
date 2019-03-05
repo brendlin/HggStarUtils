@@ -81,3 +81,29 @@ def SF_80fb(tfile) :
         return mc16d / (mc16a + mc16d)
 
     return 1
+
+StandardPlotLabels = {
+    # Now possible via regular expressions (use % instead of .*)
+    '%Sherpa_CT10_eegammaPt10_35%'   :'p_{T}^{#gamma}#in[10,35]',
+    '%Sherpa_CT10_eegammaPt35_70%'   :'p_{T}^{#gamma}#in[35,70]',
+    '%Sherpa_CT10_eegammaPt70_140%'  :'p_{T}^{#gamma}#in[70,140]',
+    '%Sherpa_CT10_eegammaPt140%'     :'p_{T}^{#gamma}>140 GeV',
+    '%Sherpa_CT10_mumugammaPt10_35%' :'p_{T}^{#gamma}#in[10,35]',
+    '%Sherpa_CT10_mumugammaPt35_70%' :'p_{T}^{#gamma}#in[35,70]',
+    '%Sherpa_CT10_mumugammaPt70_140%':'p_{T}^{#gamma}#in[70,140]',
+    '%Sherpa_CT10_mumugammaPt140%'   :'p_{T}^{#gamma}>140 GeV',
+    'Sherpa_eegamma'                 :'ee#gamma',
+    'Sherpa_mmgamma'                 :'#mu#mu#gamma',
+    '%345961%'                       :'ggH H#rightarrow#gamma*#gamma',
+    '%345962%'                       :'VBF H#rightarrow#gamma*#gamma',
+    '%345963%'                       :'WmH H#rightarrow#gamma*#gamma',
+    '%345964%'                       :'WpH H#rightarrow#gamma*#gamma',
+    '%345965%'                       :'ZH H#rightarrow#gamma*#gamma',
+    }
+
+StandardSampleMerging = {
+    # Now possible via regular expressions (use % instead of .*)
+    'Sherpa_eegamma':'%Sherpa_CT10_eegamma%',
+    'Sherpa_mmgamma':'%Sherpa_CT10_mumugamma%',
+    'AllHiggs':'%gamstargam%',
+    }

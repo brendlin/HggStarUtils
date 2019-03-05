@@ -48,34 +48,13 @@ plottext = {ChannelEnum.DIMUON             : ['Dimuon channel'],
             ChannelEnum.MERGED_DIELECTRON  : ['Merged e channel']
             }.get(channel,[])
 
-mergesamples = {
-    # Now possible via regular expressions (use % instead of .*)
-    'Sherpa_eegamma':'%Sherpa_CT10_eegamma%',
-    'Sherpa_mmgamma':'%Sherpa_CT10_mumugamma%',
-    'AllHiggs':'%gamstargam%',
-    }
 
-labels = {
-    # Now possible via regular expressions (use % instead of .*)
-    # 'Sherpa_eegamma':'Sherpa ee#gamma',
-    # 'Sherpa_mmgamma':'Sherpa #mu#mu#gamma',
-    '%Sherpa_CT10_eegammaPt10_35%'   :'p_{T}^{#gamma}#in[10,35]',
-    '%Sherpa_CT10_eegammaPt35_70%'   :'p_{T}^{#gamma}#in[35,70]',
-    '%Sherpa_CT10_eegammaPt70_140%'  :'p_{T}^{#gamma}#in[70,140]',
-    '%Sherpa_CT10_eegammaPt140%'     :'p_{T}^{#gamma}>140 GeV',
-    '%Sherpa_CT10_mumugammaPt10_35%' :'p_{T}^{#gamma}#in[10,35]',
-    '%Sherpa_CT10_mumugammaPt35_70%' :'p_{T}^{#gamma}#in[35,70]',
-    '%Sherpa_CT10_mumugammaPt70_140%':'p_{T}^{#gamma}#in[70,140]',
-    '%Sherpa_CT10_mumugammaPt140%'   :'p_{T}^{#gamma}>140 GeV',
-    'Sherpa_eegamma'                 :'ee#gamma',
-    'Sherpa_mmgamma'                 :'#mu#mu#gamma',
-    '%345961%'                       :'ggH H#rightarrow#gamma*#gamma',
-    '%345962%'                       :'VBF H#rightarrow#gamma*#gamma',
-    '%345963%'                       :'WmH H#rightarrow#gamma*#gamma',
-    '%345964%'                       :'WpH H#rightarrow#gamma*#gamma',
-    '%345965%'                       :'ZH H#rightarrow#gamma*#gamma',
-    'AllHiggs'                       :'H#rightarrow#gamma*#gamma%s'%('^{ }#times^{ }%d'%(higgsSF) if higgsSF != 1 else ''),
-    }
+from HggStarHelpers import StandardPlotLabels,StandardSampleMerging
+
+mergesamples = StandardSampleMerging
+
+labels = StandardPlotLabels
+labels['AllHiggs'] = 'H#rightarrow#gamma*#gamma%s'%('^{ }#times^{ }%d'%(higgsSF) if higgsSF != 1 else '')
 
 if region == REGION.SR :
     labels['data'] = 'Data'
@@ -88,7 +67,7 @@ cuts = [
 
 if region == REGION.CR1 :
     cuts += [
-        'HGamEventInfoAuxDyn.m_ll/1000. < 73.', # FSR only
+        'HGamEventInfoAuxDyn.m_ll/1000. < 83.', # FSR only
         'HGamEventInfoAuxDyn.m_ll/1000. > 45.', # Our control region
         ]
 
