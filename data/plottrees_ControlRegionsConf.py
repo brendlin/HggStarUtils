@@ -115,23 +115,9 @@ if region == REGION.SR :
         variables.append( 'HGamGSFTrackParticlesAuxDyn.pt[0]/1000.' )
         variables.append( 'HGamGSFTrackParticlesAuxDyn.pt[1]/1000.' )
 
-histformat = {
-    'HGamEventInfoAuxDyn.m_ll/1000.':[100,0,120,'m_{ll} [GeV]'],
-    'HGamEventInfoAuxDyn.m_lly/1000.':[100,0,200,'m_{ll#gamma} [GeV]'],
-    'HGamEventInfoAuxDyn.pt_lly/1000.':[100,0,200,'p_{Tll#gamma} [GeV]'],
-    'HGamPhotonsAuxDyn.pt[0]/1000.':[100,0,200,'p^{#gamma}_{T} [GeV]'],
-    'HGamMuonsAuxDyn.pt[0]/1000.'  :[100,0,200,'p^{#mu1}_{T} [GeV]'],
-    'HGamMuonsAuxDyn.pt[1]/1000.'  :[100,0,60,'p^{#mu2}_{T} [GeV]'],
-    'HGamElectronsAuxDyn.pt[0]/1000.'  :[100,0,200,'p^{e1}_{T} [GeV]'],
-    'HGamElectronsAuxDyn.pt[1]/1000.'  :[100,0,60,'p^{e2}_{T} [GeV]'],
-    'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly':[100,0,1,'p^{#gamma}_{T}/m_{ll#gamma}'],
-    'HGamEventInfoAuxDyn.deltaR_ll':[100,0,2,'#Delta^{}R_{ll}'],
-    'fabs(HGamGSFTrackParticlesAuxDyn.z0[0]-HGamGSFTrackParticlesAuxDyn.z0[1])':[100,0,3,'|#Delta^{}Z_{0}| [mm]'],
-    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly':[100,0,1,'p^{ll}_{T}/m_{ll#gamma}'],
-    'HGamEventInfoAuxDyn.pt_ll/1000.':[100,0,200,'p^{ll}_{T} [GeV]'],
-    'HGamGSFTrackParticlesAuxDyn.pt[0]/1000.':[100,0,100,'p^{trk0}_{T} [GeV]'],
-    'HGamGSFTrackParticlesAuxDyn.pt[1]/1000.':[100,0,30,'p^{trk1}_{T} [GeV]'],
-    }
+from HggStarHelpers import StandardHistFormat
+histformat = StandardHistFormat
+histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [100,0,200,'m_{ll#gamma} [GeV]']
 
 if region == REGION.SR :
     histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [55,105,160,'m_{ll#gamma} [GeV]']
