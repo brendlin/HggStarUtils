@@ -20,7 +20,7 @@ variables = [
     'HGamMuonsAuxDyn.pt',
     'HGamElectronsAuxDyn.pt',
     'HGamEventInfoAuxDyn.deltaR_ll',
-    'HGamEventInfoAuxDyn.Resolved_dRExtrapTrk12_LM',
+    'HGamEventInfoAuxDyn.Resolved_dRExtrapTrk12',
     'HGamElectronsAuxDyn.dRExtrapTrk12',
     'HGamEventInfoAuxDyn.crossSectionBRfilterEff',
     'HGamEventInfoAuxDyn.weight',
