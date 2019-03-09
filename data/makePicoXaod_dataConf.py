@@ -3,14 +3,12 @@ treename = 'CollectionTree'
 
 variables = [
     'HGamEventInfoAuxDyn.m_lly',
+    'HGamEventInfoAuxDyn.m_lly_gev',
     'HGamEventInfoAuxDyn.yyStarChannel',
     ]
 
 cuts = [
-    'HGamEventInfoAuxDyn.cutFlow > 21', # e.g. everything except zmass and llg mass (ysy002)
-    # replace with HGamEventInfoAuxDyn.isPassedEventSelection in ysy003
-    'HGamEventInfoAuxDyn.m_ll < 45000',
-    '105000 < HGamEventInfoAuxDyn.m_lly && HGamEventInfoAuxDyn.m_lly < 160000',
+    'HGamEventInfoAuxDyn.isPassedEventSelection', # PASSALL (including mll<45, mlly 105-160)
     ]
 
 blindcut = [
