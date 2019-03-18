@@ -123,7 +123,15 @@ StandardHistFormat = {
     'HGamEventInfoAuxDyn.pt_ll/1000.'                     :[100,  0,200,'p^{ll}_{T} [GeV]'            ],
     'HGamGSFTrackParticlesAuxDyn.pt[0]/1000.'             :[100,  0,100,'p^{trk0}_{T} [GeV]'          ],
     'HGamGSFTrackParticlesAuxDyn.pt[1]/1000.'             :[100,  0, 30,'p^{trk1}_{T} [GeV]'          ],
-    # Track variables:
+    # VBF variables
+    'HGamEventInfoAuxDyn.Deta_j_j'       :[ 30,  2,    8,'#Delta#eta_{jj}'           ],
+    'HGamEventInfoAuxDyn.Dphi_lly_jj'    :[ 12,1.75, 3.15,'#Delta#phi_{ll#gamma-jj}' ],
+    'HGamEventInfoAuxDyn.Dy_j_j'         :[ 30,  2,    8,'#Delta^{}y_{jj}'           ],
+    'HGamEventInfoAuxDyn.Zepp_lly'       :[ 20,  0,    5,'#eta_{Zepp}'               ],
+    'HGamEventInfoAuxDyn.m_jj/1000.'     :[ 21, 80,  500,'m_{jj} [GeV]'              ],
+    'HGamEventInfoAuxDyn.pTt_lly/1000.'  :[ 40,  0,  200,'p^{Tt} [GeV]'              ],
+    'HGamEventInfoAuxDyn.pT_llyjj/1000.' :[ 25,  0,  120,'p_{Tll#gamma^{}jj} [GeV]'  ],
+    # Track variables
     'HGamGSFTrackParticlesAuxDyn.z0pv[0]'           :[100,-10,10,'z_{0}^{PV} (lead)'             ],
     'HGamGSFTrackParticlesAuxDyn.z0pv[1]'           :[100,-10,10,'z_{0}^{PV} (sublead)'          ],
     'HGamGSFTrackParticlesAuxDyn.z0sinTheta[0]'     :[100,-10,10,'z_{0}^{PV}sin#theta (lead)'    ],
