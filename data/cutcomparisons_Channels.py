@@ -8,23 +8,21 @@ class CHANNEL :
     DIMUON = 1
     RESOLVED_DIELECTRON = 2
     MERGED_DIELECTRON = 3
-    AMBIGUOUS_DIELECTRON = 4
 
-labels = {
-    '%345961%':'ggH H#rightarrow#gamma*#gamma',
-    }
+from HggStarHelpers import StandardPlotLabels,StandardSampleMerging
+mergesamples = StandardSampleMerging
+labels = StandardPlotLabels
 
 # These are the preselection cuts
 cuts = [
-    'HGamEventInfoAuxDyn.cutFlow > 20', # 21 = GamIsolation
+    'HGamEventInfoAuxDyn.isPassedEventSelection',
     ]
 
-cutcomparisons = [
-    ['#mu#mu#gamma'      ,'HGamEventInfoAuxDyn.yyStarChannel == %d'%(CHANNEL.DIMUON              )],
-    ['ee#gamma resolved' ,'HGamEventInfoAuxDyn.yyStarChannel == %d'%(CHANNEL.RESOLVED_DIELECTRON )],
-    ['ee#gamma merged'   ,'HGamEventInfoAuxDyn.yyStarChannel == %d'%(CHANNEL.MERGED_DIELECTRON   )],
-    ['ee#gamma ambiguous','HGamEventInfoAuxDyn.yyStarChannel == %d'%(CHANNEL.AMBIGUOUS_DIELECTRON)],
-    ]
+cutcomparisons = {
+    '#mu#mu#gamma'      :['HGamEventInfoAuxDyn.yyStarChannel == %d'%(CHANNEL.DIMUON              )],
+    'ee#gamma resolved' :['HGamEventInfoAuxDyn.yyStarChannel == %d'%(CHANNEL.RESOLVED_DIELECTRON )],
+    'ee#gamma merged'   :['HGamEventInfoAuxDyn.yyStarChannel == %d'%(CHANNEL.MERGED_DIELECTRON   )],
+    }
 
 variables = [
     'HGamEventInfoAuxDyn.m_lly/1000.',
