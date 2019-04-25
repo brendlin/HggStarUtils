@@ -26,6 +26,15 @@ variables = [
     'HGamEventInfoAuxDyn.weight',
     'HGamGSFTrackParticlesAuxDyn.z0',
     'HGamGSFTrackParticlesAuxDyn.pt',
+    # VBF variables
+    'HGamEventInfoAuxDyn.Deta_j_j',
+    'HGamEventInfoAuxDyn.Dphi_lly_jj',
+    'HGamEventInfoAuxDyn.Zepp_lly',
+    'HGamEventInfoAuxDyn.m_jj',
+    'HGamEventInfoAuxDyn.pTt_lly',
+    'HGamEventInfoAuxDyn.pT_llyjj',
+    'HGamEventInfoAuxDyn.DRmin_y_leps_2jets',
+    'HGamEventInfoAuxDyn.DRmin_y_ystar_2jets',
     ]
 
 cuts = [
