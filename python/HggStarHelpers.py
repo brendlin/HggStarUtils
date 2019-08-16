@@ -59,6 +59,31 @@ def weightscale_hyystar(tfile,is_h015d=False) :
     #print 1000. * DxAOD / float( xAOD * Ntuple_DxAOD )
     return 1000. * DxAOD / float( xAOD * Ntuple_DxAOD )
 
+class YEAR :
+    yUnspecified = 0
+    y2015        = 1
+    y2016        = 2
+    y2017        = 3
+    y2018        = 4
+    y201516      = 5
+    y20151617    = 6
+    y2015161718  = 7
+
+def GetFbForMCNormalization(theyear) :
+    if theyear != YEAR.yUnspecified :
+        # IMPORTANT NOTE: 2015/2016 MC normalization is controlled by
+        # RandomRunNumber, so we need to specify the 2015+16 luminosity!
+        fb = {YEAR.y2015      : 3.21956 + 32.9653,
+              YEAR.y2016      : 3.21956 + 32.9653,
+              YEAR.y2017      :                     44.3074,
+              YEAR.y2018      :                               58.4501,
+              YEAR.y201516    : 3.21956 + 32.9653,
+              YEAR.y20151617  : 3.21956 + 32.9653 + 44.3074,
+              YEAR.y2015161718: 3.21956 + 32.9653 + 44.3074 + 58.4501}.get(theyear)
+        return fb
+
+    return 1.0
+
 def SherpaKfactor1p3(tfile) :
     Sherpa_NLO = ['301535','301536','301899','301900','301901','301902','301903','301904']
     checkSherpa = list(a in tfile.GetName() for a in Sherpa_NLO)
@@ -66,21 +91,42 @@ def SherpaKfactor1p3(tfile) :
         print '%s (Sherpa) will be scaled by a factor of 1.3'%(tfile.GetName())
         return 1.3
 
-    return 1
+    return 1.0
 
 def SF_80fb(tfile) :
     mc16a = 3219.56 + 32965.3
     mc16d = 44307.4
+    the_sum = float(mc16a + mc16d)
 
     if 'mc16a' in tfile.GetName() :
-        print '%s (mc16a) will be scaled by a factor of %.2f / %.2f'%(tfile.GetName(),mc16a,mc16a+mc16d)
-        return mc16a / (mc16a + mc16d)
+        print '%s (mc16a) will be scaled by a factor of %.2f / %.2f'%(tfile.GetName(),mc16a,the_sum)
+        return mc16a / the_sum
 
     if 'mc16d' in tfile.GetName() :
-        print '%s (mc16d) will be scaled by a factor of %.2f / %.2f'%(tfile.GetName(),mc16d,mc16a+mc16d)
-        return mc16d / (mc16a + mc16d)
+        print '%s (mc16d) will be scaled by a factor of %.2f / %.2f'%(tfile.GetName(),mc16d,the_sum)
+        return mc16d / the_sum
 
-    return 1
+    return 1.0
+
+def SF_139fb(tfile) :
+    mc16a = 3219.56 + 32965.3
+    mc16d = 44307.4
+    mc16e = 58450.1
+    the_sum = float(mc16a + mc16d + mc16e)
+
+    if 'mc16a' in tfile.GetName() :
+        print '%s (mc16a) will be scaled by a factor of %.2f / %.2f'%(tfile.GetName(),mc16a,the_sum)
+        return mc16a / the_sum
+
+    if 'mc16d' in tfile.GetName() :
+        print '%s (mc16d) will be scaled by a factor of %.2f / %.2f'%(tfile.GetName(),mc16d,the_sum)
+        return mc16d / the_sum
+
+    if 'mc16e' in tfile.GetName() :
+        print '%s (mc16e) will be scaled by a factor of %.2f / %.2f'%(tfile.GetName(),mc16e,the_sum)
+        return mc16e / the_sum
+
+    return 1.0
 
 StandardPlotLabels = {
     # Now possible via regular expressions (use % instead of .*)
@@ -127,10 +173,12 @@ StandardHistFormat = {
     'HGamEventInfoAuxDyn.Deta_j_j'       :[ 30,  2,    8,'#Delta#eta_{jj}'           ],
     'HGamEventInfoAuxDyn.Dphi_lly_jj'    :[ 12,1.75, 3.15,'#Delta#phi_{ll#gamma-jj}' ],
     'HGamEventInfoAuxDyn.Dy_j_j'         :[ 30,  2,    8,'#Delta^{}y_{jj}'           ],
-    'HGamEventInfoAuxDyn.Zepp_lly'       :[ 20,  0,    5,'#eta_{Zepp}'               ],
+    'fabs(HGamEventInfoAuxDyn.Zepp_lly)' :[ 20,  0,    5,'|#eta_{Zepp}|'             ],
     'HGamEventInfoAuxDyn.m_jj/1000.'     :[ 21, 80,  500,'m_{jj} [GeV]'              ],
     'HGamEventInfoAuxDyn.pTt_lly/1000.'  :[ 40,  0,  200,'p^{Tt} [GeV]'              ],
     'HGamEventInfoAuxDyn.pT_llyjj/1000.' :[ 25,  0,  120,'p_{Tll#gamma^{}jj} [GeV]'  ],
+    'HGamEventInfoAuxDyn.DRmin_y_leps_2jets'  :[ 40,  0.0,  4,'#Delta^{}R^{min}_{j,e/#mu/#gamma}'  ],
+    'HGamEventInfoAuxDyn.DRmin_y_ystar_2jets' :[ 40,  0.0,  4,'#Delta^{}R^{min}_{j,#gamma/#gamma*}'  ],
     # Track variables
     'HGamGSFTrackParticlesAuxDyn.z0pv[0]'           :[100,-10,10,'z_{0}^{PV} (lead)'             ],
     'HGamGSFTrackParticlesAuxDyn.z0pv[1]'           :[100,-10,10,'z_{0}^{PV} (sublead)'          ],
@@ -154,8 +202,28 @@ StandardHistFormat = {
     'HGamElectronsAuxDyn.delta_z0_tracks'                     :[100,-10, 10,'#Delta^{}z_{0}^{PV}'             ],
     'HGamElectronsAuxDyn.delta_z0sinTheta_tracks'             :[100,-10, 10,'#Delta^{}z_{0}^{PV}sin#theta'    ],
     'HGamElectronsAuxDyn.EOverP0P1'                           :[100,  0, 10,'E/(p_{trk0}+p_{trk1})'           ],
-    'HGamElectronsAuxDyn.dRExtrapTrk12'                       :[100,  0,0.4,'#Delta^{}R (perigee parameters)' ],
-    'HGamElectronsAuxDyn.dRExtrapTrk12_LM'                    :[100,  0,0.4,'#Delta^{}R (LM parameters)'      ],
     'HGamGSFTrackParticlesAuxDyn.mergedTrackParticleIndex[0]' :[  5,  0,  5,'Track particle index (lead)'     ],
     'HGamGSFTrackParticlesAuxDyn.mergedTrackParticleIndex[1]' :[  5,  0,  5,'Track particle index (sublead)'  ],
+    'HGamElectronsAuxDyn.ambiguityType'                       :[  6,  0,  6,'Ambiguity type'                  ],
+    'HGamElectronsAuxDyn.ambiConvRadius'                      :[ 50,-20,100,'Ambiguous photon conversion radius [mm]'],
+    #
+    'HGamElectronsAuxDyn.dEtaExtrapTrk12'   :[100,-0.11,0.11,'#Delta#eta_{local} P'],
+    'HGamElectronsAuxDyn.dPhiExtrapTrk12'   :[100,-0.21,0.21,'#Delta#phi_{local} P'],
+    'HGamElectronsAuxDyn.dEtaExtrapTrk12_LM':[100,-0.11,0.11,'#Delta#eta_{local} LM'],
+    'HGamElectronsAuxDyn.dPhiExtrapTrk12_LM':[100,-0.21,0.21,'#Delta#phi_{local} LM'],
+    'HGamElectronsAuxDyn.dRExtrapTrk12'     :[100,-0.21,0.21,'#Delta^{}R_{local} P' ],
+    'HGamElectronsAuxDyn.dRExtrapTrk12_LM'  :[100,-0.21,0.21,'#Delta^{}R_{local} LM'],
+    #
+    'HGamElectronsAuxDyn.dR1betweenTracks_LM'  :[100,-0.21,0.21,'#Delta^{}R_{1} LM'],
+    'HGamElectronsAuxDyn.dR2betweenTracks_LM'  :[100,-0.21,0.21,'#Delta^{}R_{2} LM'],
+    'HGamElectronsAuxDyn.dR1betweenTracks_P'   :[100,-0.21,0.21,'#Delta^{}R_{1} P' ],
+    'HGamElectronsAuxDyn.dR2betweenTracks_P'   :[100,-0.21,0.21,'#Delta^{}R_{2} P' ],
+    'HGamElectronsAuxDyn.dEta1betweenTracks_LM':[100,-0.11,0.11,'#Delta#eta_{1} LM'],
+    'HGamElectronsAuxDyn.dEta1betweenTracks_P' :[100,-0.11,0.11,'#Delta#eta_{1} P' ],
+    'HGamElectronsAuxDyn.dEta2betweenTracks_LM':[100,-0.11,0.11,'#Delta#eta_{2} LM'],
+    'HGamElectronsAuxDyn.dEta2betweenTracks_P' :[100,-0.11,0.11,'#Delta#eta_{2} P' ],
+    'HGamElectronsAuxDyn.dPhi1betweenTracks_LM':[100,-0.21,0.21,'#Delta#phi_{1} LM'],
+    'HGamElectronsAuxDyn.dPhi1betweenTracks_P' :[100,-0.21,0.21,'#Delta#phi_{1} P' ],
+    'HGamElectronsAuxDyn.dPhi2betweenTracks_LM':[100,-0.21,0.21,'#Delta#phi_{2} LM'],
+    'HGamElectronsAuxDyn.dPhi2betweenTracks_P' :[100,-0.21,0.21,'#Delta#phi_{2} P' ],
     }
