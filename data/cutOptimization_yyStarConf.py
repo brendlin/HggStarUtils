@@ -43,6 +43,7 @@ cuts = [
      #'HGamEventInfoAuxDyn.cutFlow > 23',
      #'HGamEventInfoAuxDyn.yyStarChannel == 1',
      'HGamEventInfoAuxDyn.isPassedEventSelection == 1',
+     'HGamPhotonsAuxDyn.pt[0]/1000>20',
      #'HGamPhotonsAuxDyn.pt[0]/1000>20',
      #'HGamEventInfoAuxDyn.pt_ll/1000>20',     
      #'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>0',
@@ -57,19 +58,42 @@ cuts = [
 #     'HGamEventInfoAuxDyn.NLoosePhotons >= 1',
 #     'HGamEventInfoAuxDyn.m_ll/1000. < 83.',
 #     'HGamEventInfoAuxDyn.N_e > 0', 
+      #'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>0.25',
+      #'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>0.35',
+      #'HGamMuonsAuxDyn.pt[0]/1000>24',
+      #'HGamElectronsAuxDyn.pt[0]/1000>23',
+      #'HGamGSFTrackParticlesAuxDyn.pt[0]/1000>27',
+      
+    #'HGamEventInfoAuxDyn.m_ll/1000<2.5 || HGamEventInfoAuxDyn.m_ll/1000>3.5', #electron J/Psi peak
+    #'HGamElectronsAuxDyn.pt[0]/1000>13',
+    
+    'HGamEventInfoAuxDyn.m_ll/1000<2.9 || HGamEventInfoAuxDyn.m_ll/1000>3.3', #muon J/Psi peak
+    'HGamEventInfoAuxDyn.m_ll/1000<9.1 || HGamEventInfoAuxDyn.m_ll/1000>10.6', #muon Y peak(s)
+    'HGamMuonsAuxDyn.pt[0]/1000>11',    
+    
+    
+    'HGamEventInfoAuxDyn.Deta_j_j<2.5', #anti-VBF cut, if no jets in event - then value is '-99', still correctly treated
+    'HGamEventInfoAuxDyn.m_jj/1000<400', #anti-VBF cut, if no jets in event - then value is '-99', still correctly treated
+    
+    
+    
+    #'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>0.4',
+    ##'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>0.4',
+    #'HGamGSFTrackParticlesAuxDyn.pt[0]/1000>27',
+    
     ]
 
 variables = [
       'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>',
-      'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>',
-      'HGamPhotonsAuxDyn.pt[0]/1000>',
-      'HGamElectronsAuxDyn.pt[0]/1000>',
-      'HGamElectronsAuxDyn.pt[1]/1000>',
-      'HGamMuonsAuxDyn.pt[0]/1000>',
-      'HGamMuonsAuxDyn.pt[1]/1000>',
-      'HGamEventInfoAuxDyn.pt_ll/1000>',
-      'HGamGSFTrackParticlesAuxDyn.pt[0]/1000>',
-      'HGamGSFTrackParticlesAuxDyn.pt[1]/1000>',
+      #'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>',
+      ##'HGamPhotonsAuxDyn.pt[0]/1000>',
+      #'HGamElectronsAuxDyn.pt[0]/1000>',
+      #'HGamElectronsAuxDyn.pt[1]/1000>',
+      #'HGamMuonsAuxDyn.pt[0]/1000>',
+      #'HGamMuonsAuxDyn.pt[1]/1000>',
+      ##'HGamEventInfoAuxDyn.pt_ll/1000>',
+      #'HGamGSFTrackParticlesAuxDyn.pt[0]/1000>',
+      #'HGamGSFTrackParticlesAuxDyn.pt[1]/1000>',
 #     'HGamTruthEventInfoAuxDyn.deltaR_l1l2_h1',
 #     'log(HGamTruthEventInfoAuxDyn.deltaR_l1l2_h1)',
 #     'HGamTruthEventInfoAuxDyn.pT_l1_h1/1000.',
@@ -97,16 +121,16 @@ variables = [
     ]
 
 histformat = {
-    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',100,0,0.5,'p^{ll}_{T}/m_{ll#gamma}'],
-    'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',100,0,0.5,'p^{#gamma}_{T}/m_{ll#gamma}'],
-    'HGamPhotonsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',120,10,70,'p^{#gamma}_{T} [GeV]'],
-    'HGamMuonsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',120,3,63,'p^{#mu0}_{T} [GeV]'],
-    'HGamMuonsAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',120,3,63,'p^{#mu1}_{T} [GeV]'],
-    'HGamElectronsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',120,4.5,64.5,'p^{e0}_{T} [GeV]'],
-    'HGamElectronsAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',120,4.5,64.5,'p^{e1}_{T} [GeV]'],
-    'HGamEventInfoAuxDyn.pt_ll/1000': [55,105,160,'m_{ll#gamma} [GeV]',120,0,60,'p^{ll}_{T} [GeV]'],
-    'HGamGSFTrackParticlesAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',120,0,60,'p^{trk0}_{T} [GeV]'],
-    'HGamGSFTrackParticlesAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',100,0,50,'p^{trk1}_{T} [GeV]'],
+    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',50,0,0.5,'p^{ll}_{T}/m_{ll#gamma}'],
+    'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',50,0,0.5,'p^{#gamma}_{T}/m_{ll#gamma}'],
+    'HGamPhotonsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,10,70,'p^{#gamma}_{T} [GeV]'],
+    'HGamMuonsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,11,71,'p^{#mu0}_{T} [GeV]'],
+    'HGamMuonsAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,3,63,'p^{#mu1}_{T} [GeV]'],
+    'HGamElectronsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',50,13,63,'p^{e0}_{T} [GeV]'],
+    'HGamElectronsAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,4,64,'p^{e1}_{T} [GeV]'],
+    'HGamEventInfoAuxDyn.pt_ll/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,0,60,'p^{ll}_{T} [GeV]'],
+    'HGamGSFTrackParticlesAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,0,60,'p^{trk0}_{T} [GeV]'],
+    'HGamGSFTrackParticlesAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',50,0,50,'p^{trk1}_{T} [GeV]'],
     'HGamTruthEventInfoAuxDyn.deltaR_l1l2_h1'     :[100,0,1,'Truth #Delta^{}R(lep1,lep2)'],
     'log(HGamTruthEventInfoAuxDyn.deltaR_l1l2_h1)':[100,-14,2,'Truth log_{10}(#Delta^{}R(lep1,lep2))'],
     'HGamTruthEventInfoAuxDyn.pT_l1_h1/1000.'     :[100,0,100],
