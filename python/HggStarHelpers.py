@@ -189,6 +189,7 @@ StandardHistFormat = {
     'HGamGSFTrackParticlesAuxDyn.TRT_PID_trans[0]'  :[100, -1, 1,'Transformed TRT PID (lead)'    ],
     'HGamGSFTrackParticlesAuxDyn.TRT_PID_trans[1]'  :[100, -1, 1,'Transformed TRT PID (sublead)' ],
     # Standard electron variables
+    'HGamElectronsAuxDyn.eta_s2'     :[494,-2.47,2.47,'#eta_{BE(2)}'   ],
     'HGamElectronsAuxDyn.Reta'       :[100,  0.8,1.05,'R_{#eta}'       ],
     'HGamElectronsAuxDyn.Eratio'     :[100,  0.3,1.05,'E_{Ratio}'      ],
     'HGamElectronsAuxDyn.RhadForPID' :[100,-0.05,0.12,'R_{Had}'        ],
@@ -198,6 +199,7 @@ StandardHistFormat = {
     'HGamElectronsAuxDyn.f3'         :[100,    0,0.03,'f_{3}'          ],
     'HGamElectronsAuxDyn.weta2'      :[100,0.005,0.02,'w_{#eta2}'      ],
     'HGamElectronsAuxDyn.wtots1'     :[100,    0,   6,'w_{s,tot}'      ],
+    'HGamPhotonsAuxDyn.topoetcone40[0]/HGamPhotonsAuxDyn.pt[0]' :[50,-0.05,0.5,'TopoE_{T}^{cone40}/p_{T}'],
     # Merged ID variables
     'HGamElectronsAuxDyn.delta_z0_tracks'                     :[100,-10, 10,'#Delta^{}z_{0}^{PV}'             ],
     'HGamElectronsAuxDyn.delta_z0sinTheta_tracks'             :[100,-10, 10,'#Delta^{}z_{0}^{PV}sin#theta'    ],
@@ -226,4 +228,9 @@ StandardHistFormat = {
     'HGamElectronsAuxDyn.dPhi1betweenTracks_P' :[100,-0.21,0.21,'#Delta#phi_{1} P' ],
     'HGamElectronsAuxDyn.dPhi2betweenTracks_LM':[100,-0.21,0.21,'#Delta#phi_{2} LM'],
     'HGamElectronsAuxDyn.dPhi2betweenTracks_P' :[100,-0.21,0.21,'#Delta#phi_{2} P' ],
+    }
+
+StandardHistRebin = {
+    'HGamElectronsAuxDyn.eta_s2':[-2.47,-2.37,-2.01,-1.81,-1.52,-1.37,-1.15,-0.80,-0.60,-0.00,
+                                   0.60,0.80,1.15,1.37,1.52,1.81,2.01,2.37,2.47]
     }
