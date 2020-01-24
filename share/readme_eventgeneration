@@ -1,0 +1,60 @@
+We are producing events with Sherpa.
+
+General Sherpa for ATLAS twiki: https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/SherpaForAtlas
+
+How to create events:
+
+1. Make an input tarball (integration grid, libraries)
+2. Create events
+3. Make truth daods 
+
+1. Make tarball (I did this on lxplus, it worked quite well)
+- checkout sherpatarballcreator (https://gitlab.cern.ch/atlas-physics/pmg/tools/sherpaTarCreator)
+- Make a directory with a descriptive name
+- Inside this directory make a numbered directory (p.ex. 999999)
+- Go into this subdirectory
+- cp job option into this subdirectory (note, that the job option needs to have a special format now, start with "mc", as discussed here: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/PmgMcSoftware#Production_transforms_and_job_op)
+- setup ATLAS
+For Sherpa 2.2.8, I used: asetup 21.6.13,AthGeneration,64,here 
+[versions are here: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/PmgMcSoftware#Versions, older version on the Sherpa-for-ATLAS twiki]
+- run tarball:
+/path/to/tarball/sherpaTarCreator.py mc.joboptionname.py
+- it uses dagman, and submits jobs one by one. One can specify the cores in the job option.
+- this will take a while, depending on what you want to generate. I had tarballs taking slightly longer than 24 hours. One can hack the tarball maker (jobDefinitions.py) to extend the allowed running times for the different steps
+- it ends by creating 100 events on one core. In the log file it will tell you how many events one can produce in 12 hours
+- in your numbered directory you should see the tarball, if everything went well (p.ex. mc_13TeV.Sh_228_ysyLO_mumu.GRID.tar.gz)
+
+2. Create events
+- Make a directory with a descriptive name
+- Inside this directory make a numbered directory (p.ex. 999999)
+- Go into this subdirectory
+- cp job option into this subdirectory [not clear if needed: evgenConfig.inputconfcheck = "eegamma_LO_pty_7_15", where the "" is the short physics name] 
+- setup ATLAS as above
+- run Gen_tf command with --inputGenConfFile=tarballname
+- example: 
+Gen_tf.py --ecmEnergy=13000.0 --randomSeed=1 --jobConfig=999997 --outputEVNTFile=tmp.EVNT.root --maxEvents=10 --inputGenConfFile=mc_13TeV.Sh_228_ysyNLO_mumu.GRID.tar.gz
+- we have also created events on the NAF (Kurt should add details here)
+- Grid submission should also work, but currently having trouble
+Command that we used (could be buggy):
+pathena --trf "Gen_tf.py --ecmEnergy=13000.0 --randomSeed=%RNDM:210 --jobConfig=999997 --outputEVNTFile=%OUT.EVNT.root --maxEvents=100 --inputGenConfFile=mc_13TeV.Sh_228_ysyNLO_mumu.GRID.tar.gz" --outDS=user.sheim.ysy_sherpa_228_nlo_mumu.EVNT.v1 --extFile mc_13TeV.Sh_228_ysyNLO_mumu.GRID.tar.gz --nCore 2 --nJobs=200 --nEventsPerJob=100
+
+3. Make truth daods
+- currently done on NAF (Kurt should add details here)
+- possibly some trouble with jet algos.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
