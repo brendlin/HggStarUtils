@@ -3,23 +3,10 @@
 # plottrees.py --config plottrees_ZmumuyValidationConf.py --bkgs %Sherpa_CT10%mumugamma%r9364%.root --data ysy001.data16.%.root,ysy001.data15.p3083_p3402.root --fb 36.2 --log --signal %gamstargam%r9364%.root
 
 from HggStarHelpers import YEAR,GetFbForMCNormalization
+from HggStarHelpers import ChannelEnum,CategoryEnum
+import StudyConfSnippets
 
 treename = 'CollectionTree'
-
-class ChannelEnum :
-    CHANNELUNKNOWN=0
-    DIMUON=1
-    RESOLVED_DIELECTRON=2
-    MERGED_DIELECTRON=3
-
-class CategoryEnum :
-    CATEGORYUNKNOWN=0
-    GGF_DIMUON=1
-    GGF_RESOLVED_DIELECTRON=2
-    GGF_MERGED_DIELECTRON=3
-    VBF_DIMUON=4
-    VBF_RESOLVED_DIELECTRON=5
-    VBF_MERGED_DIELECTRON=6
 
 class REGION :
     CR1 = 0
@@ -33,10 +20,11 @@ class REGION :
 ###
 channel = ChannelEnum.MERGED_DIELECTRON
 category = None
-region = REGION.SR_VBF
+region = REGION.SR
 higgsSF = 10
-theyear = YEAR.y20151617
+theyear = YEAR.y2015161718
 doMesonCuts = True
+doDetailedVariables = False
 ##
 # End configuration.
 ##
@@ -48,28 +36,10 @@ leptonObj = {ChannelEnum.DIMUON: 'Muons',
              ChannelEnum.MERGED_DIELECTRON:  'Electrons',
              }.get(channel,None)
 
-def GetPlotText() :
-    _text = ''
-    if category :
-        _text = {CategoryEnum.GGF_DIMUON             :['ggF Dimuon channel'    ],
-                 CategoryEnum.GGF_RESOLVED_DIELECTRON:['ggF Resolved e channel'],
-                 CategoryEnum.GGF_MERGED_DIELECTRON  :['ggF Merged e channel'  ],
-                 CategoryEnum.VBF_DIMUON             :['VBF Dimuon channel'    ],
-                 CategoryEnum.VBF_RESOLVED_DIELECTRON:['VBF Resolved e channel'],
-                 CategoryEnum.VBF_MERGED_DIELECTRON  :['VBF Merged e channel'  ],
-                 }.get(category,[])
-    else :
-        _text = {ChannelEnum.DIMUON             : ['Dimuon channel'    ],
-                 ChannelEnum.RESOLVED_DIELECTRON: ['Resolved e channel'],
-                 ChannelEnum.MERGED_DIELECTRON  : ['Merged e channel'  ]
-                 }.get(channel,['All channels'])
-
-    if region == REGION.SR_VBF :
-        _text[-1] = _text[-1].replace('channel','VBF category')
-
-    return _text
-
-plottext = GetPlotText()
+from HggStarHelpers import GetPlotText
+plottext = GetPlotText(channel,category)
+if region == REGION.SR_VBF :
+    plottext = plottext.replace('channel','VBF category')
 
 from HggStarHelpers import StandardSampleMerging as mergesamples
 
@@ -88,7 +58,7 @@ if region == REGION.SR :
     labels['data'] = 'Data'
 
 cuts = [
-    'HGamEventInfoAuxDyn.isPassedObjSelection == 1', # object selection
+    'HGamEventInfoAuxDyn.isPassedObjSelection', # object selection
     ]
 
 if channel :
@@ -99,6 +69,7 @@ if category :
 
 if region in [REGION.CR1, REGION.CR2, REGION.SR, REGION.SR_VBF] :
     cuts += [
+        '(HGamEventInfoAuxDyn.m_lly > 105000 && HGamEventInfoAuxDyn.m_lly < 160000)',
         'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly > 0.3', # new cuts
         'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly > 0.3', # new cuts
         ]
@@ -121,13 +92,7 @@ if region == REGION.SR or region == REGION.SR_VBF :
 
 # apply meson cuts by hand
 if doMesonCuts :
-    if channel in [ChannelEnum.RESOLVED_DIELECTRON, ChannelEnum.MERGED_DIELECTRON] :
-        cuts.append('!(HGamEventInfoAuxDyn.m_ll > 2500. && HGamEventInfoAuxDyn.m_ll <  3500.)')
-        cuts.append('!(HGamEventInfoAuxDyn.m_ll > 8000. && HGamEventInfoAuxDyn.m_ll < 11000.)')
-
-    if channel == ChannelEnum.DIMUON :
-        cuts.append('!(HGamEventInfoAuxDyn.m_ll > 2900. && HGamEventInfoAuxDyn.m_ll <  3300.)')
-        cuts.append('!(HGamEventInfoAuxDyn.m_ll > 9100. && HGamEventInfoAuxDyn.m_ll < 10600.)')
+    StudyConfSnippets.appendMesonCuts(cuts,channel)
 
 blindcut = [
     '(HGamEventInfoAuxDyn.m_lly < 120000 || 130000 < HGamEventInfoAuxDyn.m_lly)',
@@ -137,41 +102,52 @@ blindcut = [
 ## Standard Variables
 ##
 variables = [
-    'HGamEventInfoAuxDyn.m_ll/1000.',
+    'HGamEventInfoAuxDyn.pTt_lly/1000.',
     'HGamEventInfoAuxDyn.m_lly/1000.',
+    'HGamEventInfoAuxDyn.m_ll/1000.',
     'HGamPhotonsAuxDyn.pt[0]/1000.',
     'HGam%sAuxDyn.pt[0]/1000.'%(leptonObj),
     ]
+
+variables_detailed = []
 
 if channel != ChannelEnum.MERGED_DIELECTRON :
     variables.append( 'HGam%sAuxDyn.pt[1]/1000.'%(leptonObj) )
 
 if channel != ChannelEnum.DIMUON :
-    variables.append( 'fabs(HGamGSFTrackParticlesAuxDyn.z0[0]-HGamGSFTrackParticlesAuxDyn.z0[1])' )
+    variables_detailed.append( 'fabs(HGamGSFTrackParticlesAuxDyn.z0[0]-HGamGSFTrackParticlesAuxDyn.z0[1])' )
+    variables_detailed.append( 'HGamEventInfoAuxDyn.deltaR_track4mom' )
 
 if region == REGION.SR :
-    variables.append( 'HGamEventInfoAuxDyn.pt_lly/1000.' )
-    variables.append( 'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly' )
+    variables_detailed.append( 'HGamEventInfoAuxDyn.pt_lly/1000.' )
+    variables_detailed.append( 'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly' )
 
     if channel != ChannelEnum.MERGED_DIELECTRON :
-        variables.append( 'HGamEventInfoAuxDyn.deltaR_ll' )
-        variables.append( 'HGamEventInfoAuxDyn.pt_ll/1000.' )
-        variables.append( 'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly' )
+        variables_detailed.append( 'HGamEventInfoAuxDyn.deltaR_ll' )
+        variables_detailed.append( 'HGamEventInfoAuxDyn.pt_ll/1000.' )
+        variables_detailed.append( 'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly' )
 
     if channel == ChannelEnum.MERGED_DIELECTRON :
-        variables.append( 'HGamElectronsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly' )
-        variables.append( 'HGamGSFTrackParticlesAuxDyn.pt[0]/1000.' )
-        variables.append( 'HGamGSFTrackParticlesAuxDyn.pt[1]/1000.' )
+        variables_detailed.append( 'HGamElectronsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly' )
+        variables_detailed.append( 'HGamGSFTrackParticlesAuxDyn.pt[0]/1000.' )
+        variables_detailed.append( 'HGamGSFTrackParticlesAuxDyn.pt[1]/1000.' )
 
 if (region == REGION.SR_VBF) or (category >= 4) :
-    variables.append('HGamEventInfoAuxDyn.Deta_j_j'      )
-    variables.append('HGamEventInfoAuxDyn.Dphi_lly_jj'   )
-    variables.append('fabs(HGamEventInfoAuxDyn.Zepp_lly)')
-    variables.append('HGamEventInfoAuxDyn.m_jj/1000.'    )
-    variables.append('HGamEventInfoAuxDyn.pTt_lly/1000.' )
-    variables.append('HGamEventInfoAuxDyn.pT_llyjj/1000.')
-    variables.append('HGamEventInfoAuxDyn.DRmin_y_leps_2jets')
-    variables.append('HGamEventInfoAuxDyn.DRmin_y_ystar_2jets')
+    variables_detailed.append('HGamEventInfoAuxDyn.Deta_j_j'      )
+    variables_detailed.append('HGamEventInfoAuxDyn.Dphi_lly_jj'   )
+    variables_detailed.append('fabs(HGamEventInfoAuxDyn.Zepp_lly)')
+    variables_detailed.append('HGamEventInfoAuxDyn.m_jj/1000.'    )
+    variables_detailed.append('HGamEventInfoAuxDyn.pTt_lly/1000.' )
+    variables_detailed.append('HGamEventInfoAuxDyn.pT_llyjj/1000.')
+    variables_detailed.append('HGamEventInfoAuxDyn.DRmin_y_leps_2jets')
+    variables_detailed.append('HGamEventInfoAuxDyn.DRmin_y_ystar_2jets')
+    variables_detailed.append('HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000.')
+    variables_detailed.append('HGamAntiKt4EMPFlowJetsAuxDyn.pt[1]/1000.')
+    variables_detailed.append('HGamAntiKt4EMPFlowJetsAuxDyn.eta[0]')
+    variables_detailed.append('HGamAntiKt4EMPFlowJetsAuxDyn.eta[1]')
+
+if doDetailedVariables :
+    variables += variables_detailed
 
 from HggStarHelpers import StandardHistFormat as histformat
 histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [100,0,200,'m_{ll#gamma} [GeV]']
@@ -197,16 +173,7 @@ if theyear == YEAR.y2015 :
 if theyear == YEAR.y2016 :
     weight += '*(EventInfoAuxDyn.RandomRunNumber > 290000)'
 
-from HggStarHelpers import weightscale_hyystar,SherpaKfactor1p3,SF_80fb,SF_139fb
-
-def SF_signalxN(tfile) :
-    higgs = ['345961','345962','345963','345964','345965']
-    checkHiggs = list(a in tfile.GetName() for a in higgs)
-    if True in checkHiggs :
-        print '%s (Higgs) will be scaled by a factor of %d'%(tfile.GetName(),higgsSF)
-        return higgsSF
-
-    return 1
+from HggStarHelpers import weightscale_hyystar,SherpaKfactor1p3,SF_80fb,SF_139fb,SF_signalxN
 
 def weightscale(tfile) :
     weight = weightscale_hyystar(tfile)
@@ -217,7 +184,7 @@ def weightscale(tfile) :
     if theyear == YEAR.y2015161718 :
         weight = weight* SF_139fb(tfile)
 
-    return weight * SF_signalxN(tfile)
+    return weight * SF_signalxN(tfile,higgsSF)
 
 def afterburner(can) :
     import PlotFunctions as plotfunc

@@ -17,6 +17,24 @@ class CategoryEnum :
     VBF_CHANNELS = [VBF_DIMUON,VBF_RESOLVED_DIELECTRON,VBF_MERGED_DIELECTRON]
     GGF_CHANNELS = [GGF_DIMUON,GGF_RESOLVED_DIELECTRON,GGF_MERGED_DIELECTRON]
 
+def GetPlotText(channel,category) :
+    _text = ''
+    if category :
+        _text = {CategoryEnum.GGF_DIMUON             :['ggF Dimuon channel'    ],
+                 CategoryEnum.GGF_RESOLVED_DIELECTRON:['ggF Resolved e channel'],
+                 CategoryEnum.GGF_MERGED_DIELECTRON  :['ggF Merged e channel'  ],
+                 CategoryEnum.VBF_DIMUON             :['VBF Dimuon channel'    ],
+                 CategoryEnum.VBF_RESOLVED_DIELECTRON:['VBF Resolved e channel'],
+                 CategoryEnum.VBF_MERGED_DIELECTRON  :['VBF Merged e channel'  ],
+                 }.get(category,[])
+    else :
+        _text = {ChannelEnum.DIMUON             : ['Dimuon channel'    ],
+                 ChannelEnum.RESOLVED_DIELECTRON: ['Resolved e channel'],
+                 ChannelEnum.MERGED_DIELECTRON  : ['Merged e channel'  ]
+                 }.get(channel,['All channels'])
+
+    return _text
+
 def GetWeightedCutflowHistogram(t_file) :
     import re
     for i in t_file.GetListOfKeys() :
@@ -151,6 +169,15 @@ def SF_139fb(tfile) :
 
     return 1.0
 
+def SF_signalxN(tfile,scalefactor) :
+    higgs = ['345961','345962','345963','345964','345965','345834']
+    checkHiggs = list(a in tfile.GetName() for a in higgs)
+    if True in checkHiggs :
+        print '%s (Higgs) will be scaled by a factor of %d'%(tfile.GetName(),scalefactor)
+        return scalefactor
+
+    return 1
+
 StandardPlotLabels = {
     # Now possible via regular expressions (use % instead of .*)
     '%Sherpa_CT10_eegammaPt10_35%'   :'p_{T}^{#gamma}#in[10,35]',
@@ -189,6 +216,7 @@ StandardHistFormat = {
     'HGamEventInfoAuxDyn.pt_ll/1000.'                     :[100,  0,200,'p^{ll}_{T} [GeV]'            ],
     'HGamEventInfoAuxDyn.deltaEta_trktrk_IP'              :[100, -1, 1,'Interaction Point #Delta#eta_{tracks} [GeV]'],
     'HGamEventInfoAuxDyn.deltaPhi_trktrk_IP'              :[100, -1, 1,'Interaction Point #Delta#phi_{tracks} [GeV]'],
+    'HGamEventInfoAuxDyn.mu'                              :[ 80,  0,80,'<mu>'],
     # Truth-only variables
     'HGamTruthEventInfoAuxDyn.deltaR_l1l2_h1'             :[100,  0,  2,'Truth #Delta^{}R_{ll}'          ],
     'HGamTruthEventInfoAuxDyn.deltaEta_ll'                :[100, -1,  1,'Truth #Delta#eta_{tracks} [GeV]'],
@@ -355,7 +383,12 @@ def NormalizeToDataSidebands(can,category) :
     if not category :
         return
 
-    for hist in can.GetListOfPrimitives() :
+    prims = can.GetListOfPrimitives()
+    if can.GetPrimitive('pad_top') :
+        prims = can.GetPrimitive('pad_top').GetListOfPrimitives()
+
+    for hist in prims :
+        #print '-',hist.GetName()
         if 'data' in hist.GetName() :
             data = hist
         if 'ee' in hist.GetName() or 'mumu' in hist.GetName() :
@@ -374,9 +407,13 @@ def NormalizeToDataSidebands(can,category) :
 
     f = ROOT.TFile('Template_c%d.root'%(category),'RECREATE')
     bkg.Write('Template_c%d'%(category))
+    data.Write('Sidebands_c%d'%(category))
     f.Close()
 
     import TAxisFunctions as taxisfunc
-    taxisfunc.AutoFixYaxis(can,minzero=True)
+    if can.GetPrimitive('pad_top') :
+        taxisfunc.AutoFixYaxis(can.GetPrimitive('pad_top'),minzero=True)
+    else :
+        taxisfunc.AutoFixYaxis(can,minzero=True)
 
     return
