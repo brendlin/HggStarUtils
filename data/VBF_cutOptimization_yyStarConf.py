@@ -40,40 +40,61 @@ labels = {
     }
 
 cuts = [
-    'HGamEventInfoAuxDyn.isPassedEventSelection == 1',
-    #cuts on top of our loose SR:
-    'HGamPhotonsAuxDyn.pt[0]/1000>20',
-      
-    #'HGamEventInfoAuxDyn.m_ll/1000<2.5 || HGamEventInfoAuxDyn.m_ll/1000>3.5', #electron J/Psi peak
-    #'HGamElectronsAuxDyn.pt[0]/1000>13',
-      
-    'HGamEventInfoAuxDyn.m_ll/1000<2.9 || HGamEventInfoAuxDyn.m_ll/1000>3.3', #muon J/Psi peak
-    'HGamEventInfoAuxDyn.m_ll/1000<9.1 || HGamEventInfoAuxDyn.m_ll/1000>10.6', #muon Y peak(s)
-    'HGamMuonsAuxDyn.pt[0]/1000>11',
-    
-    'HGamEventInfoAuxDyn.Deta_j_j>2.5',
+    'HGamEventInfoAuxDyn.cutFlow > 24',
+    'HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000>25',
+    'HGamAntiKt4EMPFlowJetsAuxDyn.pt[1]/1000>25',
+    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>0.3',
+    'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>0.3',
+   
     'HGamEventInfoAuxDyn.m_jj/1000>400',
-      
+    'HGamEventInfoAuxDyn.Deta_j_j>2.5',
+    'abs(HGamEventInfoAuxDyn.Zepp_lly)<5',
+    'HGamEventInfoAuxDyn.pTt_lly/1000>20',
+    'HGamEventInfoAuxDyn.DRmin_y_leps_2jets>1',
+    'HGamEventInfoAuxDyn.Dphi_lly_jj>2.5',
     ]
 
 variables = [
-    'HGamEventInfoAuxDyn.Deta_j_j>',
     'abs(HGamEventInfoAuxDyn.Zepp_lly)<',
     'HGamEventInfoAuxDyn.DRmin_y_leps_2jets>',
     'HGamEventInfoAuxDyn.Dphi_lly_jj>',
-    'HGamEventInfoAuxDyn.m_jj/1000>',
-    'HGamEventInfoAuxDyn.pT_llyjj/1000<',
+    #'HGamEventInfoAuxDyn.pT_llyjj/1000<',
     'HGamEventInfoAuxDyn.pTt_lly/1000>',
+
+
+    #'HGamPhotonsAuxDyn.pt[0]/1000>',
+    #'HGamGSFTrackParticlesAuxDyn.pt[0]/1000>',
+    #'HGamElectronsAuxDyn.pt[0]/1000>',
+    #'HGamElectronsAuxDyn.pt[1]/1000>',
+    #'HGamMuonsAuxDyn.pt[0]/1000>',
+    #'HGamMuonsAuxDyn.pt[1]/1000>',
+    #'HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000>',
+    #'HGamAntiKt4EMPFlowJetsAuxDyn.pt[1]/1000>',
+    #'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>',
+    #'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>',
+    'HGamEventInfoAuxDyn.m_jj/1000>',
+    'HGamEventInfoAuxDyn.Deta_j_j>',
     ]
 
 histformat = {
-    'HGamEventInfoAuxDyn.DRmin_y_leps_2jets': [55,105,160,'m_{ll#gamma} [GeV]',50,0,2,'min(#Delta^{}#R_{j-#gamma/leps})'],
-    'HGamEventInfoAuxDyn.Dphi_lly_jj': [55,105,160,'m_{ll#gamma} [GeV]',50,0,4,'#Delta^{}#phi_{ll#gamma,jj}'],
-    'HGamEventInfoAuxDyn.pTt_lly/1000': [55,105,160,'m_{ll#gamma} [GeV]',50,0,250,'p^{ll#gamma}_{Tt} [GeV]'],
-    'HGamEventInfoAuxDyn.m_jj/1000': [55,105,160,'m_{ll#gamma} [GeV]',50,0,1000,'m_{jj} [GeV]'],
+    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',10,0,0.5,'p^{ll}_{T}/m_{ll#gamma}'],
+    'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',10,0.0,0.5,'p^{#gamma}_{T}/m_{ll#gamma}'],
+    'HGamPhotonsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',20,20,40,'p^{#gamma}_{T} [GeV]'],
+    'HGamMuonsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,11,71,'p^{#mu0}_{T} [GeV]'],
+    'HGamMuonsAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',34,3,20,'p^{#mu1}_{T} [GeV]'],
+    'HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',20,20,40,'p^{jet0}_{T} [GeV]'],
+    'HGamAntiKt4EMPFlowJetsAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',20,20,40,'p^{jet1}_{T} [GeV]'],
+    'HGamElectronsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',50,13,63,'p^{e0}_{T} [GeV]'],
+    'HGamElectronsAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,4.5,34.5,'p^{e1}_{T} [GeV]'],
+    'HGamGSFTrackParticlesAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',40,20,60,'p^{trk0}_{T} [GeV]'],
+    
+    'HGamEventInfoAuxDyn.DRmin_y_leps_2jets': [55,105,160,'m_{ll#gamma} [GeV]',55,0.4,1.5,'min(#Delta^{}R_{j-#gamma/leps})'],
+    'HGamEventInfoAuxDyn.Dphi_lly_jj': [55,105,160,'m_{ll#gamma} [GeV]',29,0,2.9,'#Delta^{}#phi_{ll#gamma,jj}'],
+    'HGamEventInfoAuxDyn.pTt_lly/1000': [55,105,160,'m_{ll#gamma} [GeV]',50,0,50,'p^{ll#gamma}_{Tt} [GeV]'],
+    'HGamEventInfoAuxDyn.m_jj/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,200,800,'m_{jj} [GeV]'],
     'HGamEventInfoAuxDyn.pT_llyjj/1000': [55,105,160,'m_{ll#gamma} [GeV]',50,0,100,'p^{lljj#gamma}_{T} [GeV]'],
-    'HGamEventInfoAuxDyn.Deta_j_j': [55,105,160,'m_{ll#gamma} [GeV]',8,0,4,'#Delta^{}#eta_{jj}'],
-    'abs(HGamEventInfoAuxDyn.Zepp_lly)': [55,105,160,'m_{ll#gamma} [GeV]',50,0,20,'|#eta^{ll#gamma}_{Zepp}|'],
+    'HGamEventInfoAuxDyn.Deta_j_j': [55,105,160,'m_{ll#gamma} [GeV]',25,1,3.5,'#Delta^{}#eta_{jj}'],
+    'abs(HGamEventInfoAuxDyn.Zepp_lly)': [55,105,160,'m_{ll#gamma} [GeV]',50,2,7,'|#eta^{ll#gamma}_{Zepp}|'],
     }
 
 weight = 'HGamEventInfoAuxDyn.crossSectionBRfilterEff*HGamEventInfoAuxDyn.weight'
