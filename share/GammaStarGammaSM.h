@@ -139,6 +139,7 @@ void GammaStarGammaSM(TFile* file,std::string key) {
 
   TFile* outFile = NULL;
   TTree* outTree = NULL;
+  float crossSectionBRfilterEff = 1.0;
   float EventInfoAuxDyn_mcEventWeight;
   float HGamTruthEventInfoAuxDyn_m_lly;
   float HGamTruthEventInfoAuxDyn_m_ly; // leading lepton plus photon
@@ -156,6 +157,9 @@ void GammaStarGammaSM(TFile* file,std::string key) {
   float HGamTruthEventInfoAuxDyn_Zepp_lly;
   float HGamTruthEventInfoAuxDyn_Dphi_lly_jj;
   float HGamTruthEventInfoAuxDyn_DRmin_y_leps_2jets;
+  int HGamTruthEventInfoAuxDyn_yyStarChannel = 0;
+  int HGamTruthEventInfoAuxDyn_yyStarCategory = 0;
+  int HGamTruthEventInfoAuxDyn_passVBF = 0;
 
   std::vector<float> HGamTruthPhotonsAuxDyn_pt;
   std::vector<float> HGamTruthPhotonsAuxDyn_eta;
@@ -167,30 +171,35 @@ void GammaStarGammaSM(TFile* file,std::string key) {
   if (doNtuple) {
     outFile = new TFile(Form("%s_nano.root",key.c_str()), "RECREATE");
     outTree = new TTree("CollectionTree","evgen_tree");
-    outTree->Branch("EventInfoAuxDyn.mcEventWeight",&EventInfoAuxDyn_mcEventWeight);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.m_lly",&HGamTruthEventInfoAuxDyn_m_lly);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.m_ly",&HGamTruthEventInfoAuxDyn_m_ly);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.m_ll",&HGamTruthEventInfoAuxDyn_m_ll);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.pt_ll",&HGamTruthEventInfoAuxDyn_pt_ll);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.pt_lly",&HGamTruthEventInfoAuxDyn_pt_lly);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.pTt_lly",&HGamTruthEventInfoAuxDyn_pTt_lly);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.deltaR_ll",&HGamTruthEventInfoAuxDyn_deltaR_ll);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.deltaEta_ll",&HGamTruthEventInfoAuxDyn_deltaEta_ll);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.deltaPhi_ll",&HGamTruthEventInfoAuxDyn_deltaPhi_ll);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.deltaPhiMagnet_ll",&HGamTruthEventInfoAuxDyn_deltaPhiMagnet_ll);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.deltaPhiMagnetRescaled_ll",&HGamTruthEventInfoAuxDyn_deltaPhiMagnetRescaled_ll);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.Deta_j_j",&HGamTruthEventInfoAuxDyn_Deta_j_j);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.m_jj",&HGamTruthEventInfoAuxDyn_m_jj);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.Zepp_lly",&HGamTruthEventInfoAuxDyn_Zepp_lly);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.Dphi_lly_jj",&HGamTruthEventInfoAuxDyn_Dphi_lly_jj);
-    outTree->Branch("HGamTruthEventInfoAuxDyn.DRmin_y_leps_2jets",&HGamTruthEventInfoAuxDyn_DRmin_y_leps_2jets);
+    outTree->Branch("HGamEventInfoAuxDyn.weight",&EventInfoAuxDyn_mcEventWeight);
+    outTree->Branch("HGamEventInfoAuxDyn.m_lly",&HGamTruthEventInfoAuxDyn_m_lly);
+    outTree->Branch("HGamEventInfoAuxDyn.m_ly",&HGamTruthEventInfoAuxDyn_m_ly);
+    outTree->Branch("HGamEventInfoAuxDyn.m_ll",&HGamTruthEventInfoAuxDyn_m_ll);
+    outTree->Branch("HGamEventInfoAuxDyn.pt_ll",&HGamTruthEventInfoAuxDyn_pt_ll);
+    outTree->Branch("HGamEventInfoAuxDyn.pt_lly",&HGamTruthEventInfoAuxDyn_pt_lly);
+    outTree->Branch("HGamEventInfoAuxDyn.pTt_lly",&HGamTruthEventInfoAuxDyn_pTt_lly);
+    outTree->Branch("HGamEventInfoAuxDyn.deltaR_ll",&HGamTruthEventInfoAuxDyn_deltaR_ll);
+    outTree->Branch("HGamEventInfoAuxDyn.deltaEta_ll",&HGamTruthEventInfoAuxDyn_deltaEta_ll);
+    outTree->Branch("HGamEventInfoAuxDyn.deltaPhi_ll",&HGamTruthEventInfoAuxDyn_deltaPhi_ll);
+    outTree->Branch("HGamEventInfoAuxDyn.deltaPhiMagnet_ll",&HGamTruthEventInfoAuxDyn_deltaPhiMagnet_ll);
+    outTree->Branch("HGamEventInfoAuxDyn.deltaPhiMagnetRescaled_ll",&HGamTruthEventInfoAuxDyn_deltaPhiMagnetRescaled_ll);
+    outTree->Branch("HGamEventInfoAuxDyn.Deta_j_j",&HGamTruthEventInfoAuxDyn_Deta_j_j);
+    outTree->Branch("HGamEventInfoAuxDyn.m_jj",&HGamTruthEventInfoAuxDyn_m_jj);
+    outTree->Branch("HGamEventInfoAuxDyn.Zepp_lly",&HGamTruthEventInfoAuxDyn_Zepp_lly);
+    outTree->Branch("HGamEventInfoAuxDyn.Dphi_lly_jj",&HGamTruthEventInfoAuxDyn_Dphi_lly_jj);
+    outTree->Branch("HGamEventInfoAuxDyn.DRmin_y_leps_2jets",&HGamTruthEventInfoAuxDyn_DRmin_y_leps_2jets);
 
-    outTree->Branch("HGamTruthPhotonsAuxDyn.pt",&HGamTruthPhotonsAuxDyn_pt);
-    outTree->Branch("HGamTruthPhotonsAuxDyn.eta",&HGamTruthPhotonsAuxDyn_eta);
-    outTree->Branch(Form("HGamTruth%sAuxDyn.pt",(doMuons ? "Muons":"Electrons")),&HGamTruthLeptonsAuxDyn_pt);
-    outTree->Branch(Form("HGamTruth%sAuxDyn.eta",(doMuons ? "Muons":"Electrons")),&HGamTruthLeptonsAuxDyn_eta);
-    outTree->Branch("HGamAntiKt4TruthWZJetsAuxDyn.pt",&HGamAntiKt4TruthWZJetsAuxDyn_pt);
-    outTree->Branch("HGamAntiKt4TruthWZJetsAuxDyn.eta",&HGamAntiKt4TruthWZJetsAuxDyn_eta);
+    outTree->Branch("HGamPhotonsAuxDyn.pt",&HGamTruthPhotonsAuxDyn_pt);
+    outTree->Branch("HGamPhotonsAuxDyn.eta",&HGamTruthPhotonsAuxDyn_eta);
+    outTree->Branch(Form("HGam%sAuxDyn.pt",(doMuons ? "Muons":"Electrons")),&HGamTruthLeptonsAuxDyn_pt);
+    outTree->Branch(Form("HGam%sAuxDyn.eta",(doMuons ? "Muons":"Electrons")),&HGamTruthLeptonsAuxDyn_eta);
+    outTree->Branch("HGamAntiKt4EMPFlowJetsAuxDyn.pt",&HGamAntiKt4TruthWZJetsAuxDyn_pt);
+    outTree->Branch("HGamAntiKt4EMPFlowJetsAuxDyn.eta",&HGamAntiKt4TruthWZJetsAuxDyn_eta);
+
+    outTree->Branch("HGamEventInfoAuxDyn.crossSectionBRfilterEff",&crossSectionBRfilterEff);
+    outTree->Branch("HGamEventInfoAuxDyn.yyStarChannel",&HGamTruthEventInfoAuxDyn_yyStarChannel);
+    outTree->Branch("HGamEventInfoAuxDyn.passVBF",&HGamTruthEventInfoAuxDyn_passVBF);
+    outTree->Branch("HGamEventInfoAuxDyn.yyStarCategory",&HGamTruthEventInfoAuxDyn_yyStarCategory);
   }
 
   gROOT->cd();
@@ -387,6 +396,22 @@ void GammaStarGammaSM(TFile* file,std::string key) {
     TLorentzVector g2 = tlv_lep0 + tlv_lep1;
     float pTt_lly = fabs(g1.Px() * g2.Py() - g2.Px() * g1.Py()) / (g1 - g2).Pt() * 2.0;
 
+    float deltaPhiMagnet_ll = selLepton0->charge() * deltaPhiMagnet2T(*selLepton0,*selLepton1);
+    float deltaEta_ll = deltaEta(*selLepton0,*selLepton1);
+    float deltaPhiMagnetRescaled_ll = selLepton0->charge() * deltaPhiMagnet2T_Rescaled(*selLepton0,*selLepton1);
+
+    bool nearMerged = abs(deltaEta_ll) < 0.05 && abs(deltaPhiMagnet_ll) < 0.05;
+    bool farMerged  = abs(deltaEta_ll) < 0.05 && abs(deltaPhiMagnet_ll) > 0.10 && abs(deltaPhiMagnetRescaled_ll) < 0.05;
+
+    int yyStarChannel = 0;
+    if (leptonChannel == 1) yyStarChannel = 1;
+    else {
+      // No - need to do better!
+      // E.g. some events can be classified both as merged and resolved, depending on ID eff.
+      if (nearMerged || farMerged) yyStarChannel = 3;
+      else yyStarChannel = 2;
+    }
+
     bool passAnalysisSelection = true;
 
     if (doAnalysisSelection) {
@@ -420,16 +445,17 @@ void GammaStarGammaSM(TFile* file,std::string key) {
 
     if (!passAnalysisSelection) {delete goodJetsAux; delete goodJets; continue;}
 
-    float vbf_m = -1;
+    float vbf_m = -99;
     float deta_jj = -99;
     float Zepp_lly = -99;
-    float DRmin_y_leps_2jets = 99999;
+    float DRmin_y_leps_2jets = -99;
     float Dphi_lly_jj = -99;
 
     // VBF cuts
     bool passVBF = false;
     if (goodJets->size() > 1){ //we have two or more jets - prerequisite to pass VBF
       passVBF = true;
+
       vbf_m = (goodJets->at(0)->p4() + goodJets->at(1)->p4()).M();
       deta_jj = Deta_j_j(*(goodJets->at(0)),*(goodJets->at(1)));
 
@@ -438,6 +464,7 @@ void GammaStarGammaSM(TFile* file,std::string key) {
 
       Dphi_lly_jj = fabs(( tlv_lep0 + tlv_lep1 + selPhoton->p4()).DeltaPhi(goodJets->at(0)->p4() + goodJets->at(0)->p4()));
 
+      DRmin_y_leps_2jets = 99999;
       DRmin_y_leps_2jets = std::min(DRmin_y_leps_2jets,deltaR(*(goodJets->at(0)),*selPhoton ,false));
       DRmin_y_leps_2jets = std::min(DRmin_y_leps_2jets,deltaR(*(goodJets->at(1)),*selPhoton ,false));
       DRmin_y_leps_2jets = std::min(DRmin_y_leps_2jets,deltaR(*(goodJets->at(0)),*selLepton0,false));
@@ -445,10 +472,43 @@ void GammaStarGammaSM(TFile* file,std::string key) {
       DRmin_y_leps_2jets = std::min(DRmin_y_leps_2jets,deltaR(*(goodJets->at(0)),*selLepton1,false));
       DRmin_y_leps_2jets = std::min(DRmin_y_leps_2jets,deltaR(*(goodJets->at(1)),*selLepton1,false));
 
-      passVBF = passVBF && vbf_m > 400*GeV;
-      passVBF = passVBF && deta_jj > 2.5;
-      passVBF = passVBF && goodJets->at(0)->pt() > 25 * GeV;
-      passVBF = passVBF && goodJets->at(1)->pt() > 25 * GeV;
+      int versionVBF = 2;
+      if (versionVBF == 1) {
+        passVBF = passVBF && vbf_m > 400*GeV;
+        passVBF = passVBF && deta_jj > 2.5;
+        passVBF = passVBF && goodJets->at(0)->pt() > 25 * GeV;
+        passVBF = passVBF && goodJets->at(1)->pt() > 25 * GeV;
+      }
+      else if (versionVBF == 2) {
+        passVBF = passVBF && goodJets->at(0)->pt() > 25 * GeV;
+        passVBF = passVBF && goodJets->at(1)->pt() > 25 * GeV;
+        passVBF = passVBF && fabs(Zepp_lly) < 2.0;
+        passVBF = passVBF && DRmin_y_leps_2jets > 1.5;
+        passVBF = passVBF && Dphi_lly_jj > 2.8;
+        passVBF = passVBF && vbf_m > 500 * GeV;
+        passVBF = passVBF && deta_jj > 2.7;
+
+        float fw_jet0_pt = fabs(goodJets->at(0)->eta()) > 2.5 ? goodJets->at(0)->pt() : 999 * GeV;
+        float fw_jet1_pt = fabs(goodJets->at(1)->eta()) > 2.5 ? goodJets->at(1)->pt() : 999 * GeV;
+        passVBF = passVBF && (fw_jet0_pt > 30 * GeV && fw_jet1_pt > 30 * GeV);
+
+      }
+    }
+
+    HGamTruthEventInfoAuxDyn_passVBF = passVBF;
+
+    // Event categorization currently does not differentiate between merged and resoved.
+    if (passVBF) {
+      if (leptonChannel == 1) HGamTruthEventInfoAuxDyn_yyStarCategory = 4;
+      else                    HGamTruthEventInfoAuxDyn_yyStarCategory = 5;
+    }
+    else if (pTt_lly > 100 * GeV) {
+      if (leptonChannel == 1) HGamTruthEventInfoAuxDyn_yyStarCategory = 7;
+      else                    HGamTruthEventInfoAuxDyn_yyStarCategory = 8;
+    }
+    else {
+      if (leptonChannel == 1) HGamTruthEventInfoAuxDyn_yyStarCategory = 1;
+      else                    HGamTruthEventInfoAuxDyn_yyStarCategory = 2;
     }
 
     // apply these VBF cuts
@@ -508,10 +568,10 @@ void GammaStarGammaSM(TFile* file,std::string key) {
       HGamTruthEventInfoAuxDyn_pt_lly = pt_lly;
       HGamTruthEventInfoAuxDyn_pTt_lly = pTt_lly;
       HGamTruthEventInfoAuxDyn_deltaR_ll = deltaRll;
-      HGamTruthEventInfoAuxDyn_deltaEta_ll = deltaEta(*selLepton0,*selLepton1);
+      HGamTruthEventInfoAuxDyn_deltaEta_ll = deltaEta_ll;
       HGamTruthEventInfoAuxDyn_deltaPhi_ll = selLepton0->charge() * deltaPhi(*selLepton0,*selLepton1);
-      HGamTruthEventInfoAuxDyn_deltaPhiMagnet_ll = selLepton0->charge() * deltaPhiMagnet2T(*selLepton0,*selLepton1);
-      HGamTruthEventInfoAuxDyn_deltaPhiMagnetRescaled_ll = selLepton0->charge() * deltaPhiMagnet2T_Rescaled(*selLepton0,*selLepton1);
+      HGamTruthEventInfoAuxDyn_deltaPhiMagnet_ll = deltaPhiMagnet_ll;
+      HGamTruthEventInfoAuxDyn_deltaPhiMagnetRescaled_ll = deltaPhiMagnetRescaled_ll;
       HGamTruthEventInfoAuxDyn_Deta_j_j = deta_jj;
       HGamTruthEventInfoAuxDyn_m_jj = vbf_m;
       HGamTruthEventInfoAuxDyn_Zepp_lly = Zepp_lly;
