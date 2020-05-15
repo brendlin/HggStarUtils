@@ -165,6 +165,7 @@ def main(options,args) :
         parameters[key] = float(i.split()[2])
 
     parameters_table = []
+    res_table = []
 
     # print parameters
     strformat = '{:<40} & {:>19} & {:>8} & {:>8} & {:>15} & {:>8} \\\\ \hline'
@@ -173,6 +174,7 @@ def main(options,args) :
     for c in range(9) :
 
         parameters_table.append([])
+        res_table.append([])
         cstr = 'c%d'%(c)
 
         f_sig = ROOT.TF1('Fit to DSCB',ROOT.dscb,105,160,7)
@@ -189,7 +191,11 @@ def main(options,args) :
         integral = f_sig.IntegralOneDim(80,180,integralTolerance,integralTolerance,ROOT.Double())
         f_sig.SetParameter(0,parameters['sigYield_SM_m125000_c%d'%(c)]/integral)
 
-        lim_lo,lim_hi,f90 = findSmallestWindow(f_sig,parameters['sigYield_SM_m125000_c%d'%(c)])
+        lim_lo_68,lim_hi_68,f68 = findSmallestWindow(f_sig,parameters['sigYield_SM_m125000_c%d'%(c)],containing=0.68)
+        res_table[-1].append(0.5*(lim_hi_68-lim_lo_68))
+
+        lim_lo_90,lim_hi_90,f90 = findSmallestWindow(f_sig,parameters['sigYield_SM_m125000_c%d'%(c)])
+        res_table[-1].append(0.5*(lim_hi_90-lim_lo_90))
 
         parameters_table[-1].append(function[cstr])
         parameters_table[-1].append(str(parameters['nbkg_%s'%(cstr)]))
@@ -225,22 +231,38 @@ def main(options,args) :
         f_bkg.SetParameter(0,parameters['nbkg_%s'%(cstr)]/float(integral))
 
         s90 = parameters['sigYield_SM_m125000_c%d'%(c)]*0.9
-        b90 = f_bkg.Integral(lim_lo,lim_hi)
+        b90 = f_bkg.Integral(lim_lo_90,lim_hi_90)
         z90 = math.sqrt( 2*( (s90+b90)*math.log(1+s90/b90) - s90) )
 
         #f_bkg.Draw()
         #raw_input('pause')
 
-        str_range = '[%.2f, %.2f]'%(lim_lo,lim_hi)
+        str_range = '[%.2f, %.2f]'%(lim_lo_90,lim_hi_90)
         str_b90 = '%.3g'%(b90) if b90 < 1000 else '%.0f'%(b90)
         strformat = '{:<40} & {:<19} & {:8.3g} & {:>8} & {:15.1f} & {:8.2f} \\\\'
         print strformat.format(CategoryNames[cstr],str_range,s90,str_b90,s90*100/(s90+b90),z90)
 
-    # Print out parameters as well.
+
+    print ''
+    ##
+    ## Print the effective resolution s68 and s90
+    ##
+    strformat = '{:<40} & {:>21} & {:>21} \\\\ \hline \midrule'
+    print strformat.format('Category','$\sigma_{68}$ [GeV]','$\sigma_{90}$ [GeV]')
+    for c,res in enumerate(res_table) :
+        cstr = 'c%d'%(c)
+        strformat = '{:<40} & {:>21.2f} & {:>21.2f} \\\\'
+        print strformat.format(CategoryNames[cstr],res[0],res[1])
+
+    print ''
+    ##
+    ## Print the parameters of the bkg fits.
+    ##
     strformat = '{:<40} & {:>11} & {:>11} & {:>11} & {:>11} & {:>11} \\\\ \hline \midrule'
     print strformat.format('Category','Form','Bkg Yield','p0','p1','p2')
 
-    for cat in parameters_table :
+    for c,cat in enumerate(parameters_table) :
+        cstr = 'c%d'%(c)
         strformat = '{:<40} & {:>11} & {:>11} & {:>11} & {:>11} & {:>11} \\\\'
         print strformat.format(CategoryNames[cstr],cat[0],cat[1],cat[2],cat[3],cat[4])
 
