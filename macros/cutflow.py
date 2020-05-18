@@ -18,24 +18,18 @@ def GetDataCutflowHistograms(t_file) :
         hists.append(i.ReadObj())
     return hists
 
-def GetWeightedCutflowHistogram(t_file) :
+def GetWeightedCutflowHistogram(t_file,channel='') :
     import re
-    for i in t_file.GetListOfKeys() :
-        # get _weighted
-        if not re.match('CutFlow_.*_weighted',i.GetName()) :
-            continue
-        if re.match('CutFlow_.*_onlyDalitz_weighted',i.GetName()) :
-            continue
-        return i.ReadObj()
-    return 0
 
-def GetWeightedCutflowHistogramChannel(t_file,channel) :
-    import re
+    channel_str = ''
+    if channel :
+        channel_str = '_%s'%(channel)
+
     for i in t_file.GetListOfKeys() :
         # get _weighted
         if not re.match('CutFlow_.*_weighted',i.GetName()) :
             continue
-        if not re.match('CutFlow_.*_onlyDalitz_%s_weighted'%(channel),i.GetName()) :
+        if not re.match('CutFlow_.*_onlyDalitz%s_weighted'%(channel_str),i.GetName()) :
             continue
         return i.ReadObj()
     return 0
@@ -67,11 +61,7 @@ def main(options,args) :
 
         for k in sorted(keys_s) :
 
-            if options.channel :
-                sig_hists.append(GetWeightedCutflowHistogramChannel(files_s[k],options.channel))
-
-            else :
-                sig_hists.append(GetWeightedCutflowHistogram(files_s[k]))
+            sig_hists.append(GetWeightedCutflowHistogram(files_s[k],options.channel))
 
             tags = ['mc16a','mc16d','mc16e']
             print ' -',''.join(list(a if a in k else '' for a in tags)),sig_hists[-1].GetName()
@@ -118,9 +108,13 @@ def main(options,args) :
     if not hist :
         return
 
+    # Make sure this is matched up with what is determined in weightscale !
+    norm_bin = 4
+
     text = ''
-    text += '%s & %s & %s & %s \\\\\n'%('Cut'.ljust(40),'Surviving events'.ljust(17),'Cut efficiency'.ljust(16),'Total efficiency'.ljust(16))
-    for bin in range(3,hist.GetNbinsX()+1) :
+    header_str = '{:<40} & {:<17} & {:<16} & {:<16} \\\\\n'
+    text += header_str.format('Cut','Surviving events','Cut efficiency','Total efficiency')
+    for bin in range(norm_bin,hist.GetNbinsX()+1) :
         text += ('%s:'%(hist.GetXaxis().GetBinLabel(bin))).ljust(40)
         text += ' & '
         if options.signal :
@@ -128,7 +122,8 @@ def main(options,args) :
         else :
             text += ('%d'%(hist.GetBinContent(bin))).rjust(17)
         text += ' & '
-        text += ('%2.1f'%(100*hist.GetBinContent(bin)/float(hist.GetBinContent(max(bin-1,3))))).rjust(16)
+        prev_bin_content = hist.GetBinContent(max(bin-1,0))
+        text += ('%2.1f'%(100*hist.GetBinContent(bin)/float(prev_bin_content))).rjust(16)
         text += ' & '
         text += ('%2.1f'%(100*hist.GetBinContent(bin)/float(hist.GetBinContent(3)))).rjust(16)
         text += ' \\\\\n'
@@ -149,7 +144,7 @@ if __name__ == '__main__':
         print 'Error! Please specify a variable!'
         sys.exit()
 
-    channels = ['','Dimuon','ResolvedDielectron','MergedDielectron']
+    channels = ['','Dimuon','ResolvedDielectron','MergedDielectron','AmbiguousDielectron']
     if options.channel not in channels :
         print 'Wrong channel! Pick from:',', '.join(channels)
         sys.exit()

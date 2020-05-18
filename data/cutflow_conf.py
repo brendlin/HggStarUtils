@@ -4,7 +4,7 @@ from HggStarHelpers import GetFbForMCNormalization
 
 treename = 'CollectionTree'
 
-theyear = YEAR.y201516
+theyear = YEAR.y2015161718
 fb = GetFbForMCNormalization(theyear)
 
 def weightscale(tfile) :
