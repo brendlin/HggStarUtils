@@ -106,36 +106,36 @@ def afterburner(can) :
     ratioplot.GetXaxis().SetTitle('m_{ll#gamma} [GeV]')
 
     bkg_parameters_block = '''
-nbkg_muons_incl2015-18_mu    = 11885.6     +/-  125.181    (limited)
-a1_muons_incl2015-18_mu      = -4.18181     +/-  0.296923    (limited)
-a2_muons_incl2015-18_mu      = -3.06586     +/-  0.256592    (limited)
-a3_muons_incl2015-18_mu      = 4.99938     +/-  0.256178    (limited)
+nbkg_muons_incl2015-18_mu      = 11878.2     +/-  120.399    (limited)
+a1_muons_incl2015-18_mu      = -4.53852     +/-  0.179633    (limited)
+a2_muons_incl2015-18_mu      = 3.30439     +/-  0.165049    (limited)
+a3_muons_incl2015-18_mu      = -1.47459     +/-  0.508958    (limited)
 
-nbkg_resolved_incl2015-18_mu    = 5334.22     +/-  83.5894    (limited)
-a1_resolved_incl2015-18_mu      = -3.60546     +/-  0.455482    (limited)
-a2_resolved_incl2015-18_mu      = 0.00528183     +/-  0.766147    (limited)
+nbkg_resolved_incl2015-18_mu      = 5334.09     +/-  83.7904    (limited)
+a1_resolved_incl2015-18_mu      = -3.60607     +/-  0.455044    (limited)
+a2_resolved_incl2015-18_mu      = 0.00628578     +/-  0.762606    (limited)
 
-nbkg_merged_incl2015-18_mu    = 6181.38     +/-  89.8828    (limited)
-a1_merged_incl2015-18_mu      = -1.79138     +/-  0.407804    (limited)
-a2_merged_incl2015-18_mu      = -0.50305     +/-  0.66434    (limited)
+nbkg_merged_incl2015-18_mu      = 6180.67     +/-  90.8015    (limited)
+a1_merged_incl2015-18_mu      = -1.79265     +/-  0.393113    (limited)
+a2_merged_incl2015-18_mu      = -0.500681     +/-  0.648747    (limited)
 
-nbkg_muons_vbf2015-18_mu      = 38.9121     +/-  7.01024    (limited)
-slope_muons_vbf2015-18_mu     = -0.0244015     +/-  0.0107171    (limited)
+nbkg_muons_vbf2015-18_mu      = 38.9094     +/-  6.96168    (limited)
+slope_muons_vbf2015-18_mu      = -0.0243778     +/-  0.0107391    (limited)
 
-nbkg_resolved_vbf2015-18_mu      = 12.5735     +/-  3.98477    (limited)
-slope_resolved_vbf2015-18_mu     = -0.0286503     +/-  0.0192116    (limited)
+nbkg_resolved_vbf2015-18_mu      = 12.5782     +/-  3.9915    (limited)
+slope_resolved_vbf2015-18_mu      = -0.0286611     +/-  0.0190401    (limited)
 
-nbkg_merged_vbf2015-18_mu      = 23.7833     +/-  5.51869    (limited)
-slope_merged_vbf2015-18_mu     = -0.045999     +/-  0.0153179    (limited)
+nbkg_merged_vbf2015-18_mu      = 23.7751     +/-  5.48928    (limited)
+slope_merged_vbf2015-18_mu      = -0.0459791     +/-  0.0148474    (limited)
 
-nbkg_muons_highptt2015-18_mu      = 237.115     +/-  17.1241    (limited)
-lambda_muons_highptt2015-18_mu    = -1.72356     +/-  0.553476    (limited)
+nbkg_muons_highptt2015-18_mu      = 237.156     +/-  17.191    (limited)
+lambda_muons_highptt2015-18_mu      = -1.72409     +/-  0.546747    (limited)
 
-nbkg_resolved_highptt2015-18_mu      = 91.795     +/-  10.4152    (limited)
-lambda_resolved_highptt2015-18_mu    = -1.61853     +/-  0.927933    (limited)
+nbkg_resolved_highptt2015-18_mu      = 91.8353     +/-  10.7243    (limited)
+lambda_resolved_highptt2015-18_mu      = -1.61933     +/-  0.931285    (limited)
 
-nbkg_merged_highptt2015-18_mu      = 185.876     +/-  15.135    (limited)
-lambda_merged_highptt2015-18_mu    = -0.669692     +/-  0.655263    (limited)
+nbkg_merged_highptt2015-18_mu      = 185.889     +/-  15.1875    (limited)
+lambda_merged_highptt2015-18_mu      = -0.67296     +/-  0.618264    (limited)
 '''
 
     tmp_name = {
@@ -163,7 +163,7 @@ lambda_merged_highptt2015-18_mu    = -0.669692     +/-  0.655263    (limited)
         }.get(category)
 
     expr = {
-        'ExpPoly3':'[0]*exp((x - 100)/100*([1] + [2]*(x - 100)/100) + [3]*(x - 100)/100*(x - 100)/100)',
+        'ExpPoly3':'[0]*exp((x - 100)/100*([1] + [2]*(x - 100)/100 + [3]*(x - 100)/100*(x - 100)/100))',
         'ExpPoly2':'[0]*exp((x - 100)/100*([1] + [2]*(x - 100)/100))',
         'ExpPoly2':'[0]*exp((x - 100)/100*([1] + [2]*(x - 100)/100))',
         'Exponential':'[0]*exp(x*[1])',
@@ -171,7 +171,6 @@ lambda_merged_highptt2015-18_mu    = -0.669692     +/-  0.655263    (limited)
         }.get(function)
 
     f_bkg = ROOT.TF1(function,expr,105,160)
-    print expr
     f_bkg.SetTitle(function)
 
     translation = {
@@ -187,10 +186,8 @@ lambda_merged_highptt2015-18_mu    = -0.669692     +/-  0.655263    (limited)
         }
 
     parameters = dict()
-    print bkg_parameters_block
     for i in bkg_parameters_block.split('\n') :
         if not i : continue
-        print '~%s~'%(i)
         key = i.split()[0]
         for t in translation.keys() :
             key = key.replace(translation[t],t)
@@ -211,7 +208,6 @@ lambda_merged_highptt2015-18_mu    = -0.669692     +/-  0.655263    (limited)
         f_bkg.SetParameter(1,par)
     if function in ['Exponential'] :
         par = parameters['slope_%s'%(cstr)]
-        print 'exp par',par
         f_bkg.SetParameter(1,par)
 
     f_bkg.SetParameter(0,1)
