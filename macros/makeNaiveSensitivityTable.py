@@ -100,7 +100,7 @@ CategoryNames = {
     }
 
 expr = {
-    'ExpPoly3':'[0]*exp((x - 100)/100*([1] + [2]*(x - 100)/100) + [3]*(x - 100)/100*(x - 100)/100)',
+    'ExpPoly3':'[0]*exp((x - 100)/100*([1] + [2]*(x - 100)/100 + [3]*(x - 100)/100*(x - 100)/100))',
     'ExpPoly2':'[0]*exp((x - 100)/100*([1] + [2]*(x - 100)/100))',
     'ExpPoly2':'[0]*exp((x - 100)/100*([1] + [2]*(x - 100)/100))',
     'Exponential':'[0]*exp(x*[1])',
@@ -217,11 +217,11 @@ def main(options,args) :
         if function[cstr] in ['Power Law'] :
             par = parameters['lambda_%s'%(cstr)]
             parameters_table[-1].append(str(par))
-            f_bkg.SetParameter(3,par)
+            f_bkg.SetParameter(1,par)
         if function[cstr] in ['Exponential'] :            
             par = parameters['slope_%s'%(cstr)]
             parameters_table[-1].append(str(par))
-            f_bkg.SetParameter(3,par)
+            f_bkg.SetParameter(1,par)
 
         while len(parameters_table[-1]) < 5 :
             parameters_table[-1].append('')
