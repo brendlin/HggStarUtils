@@ -13,19 +13,26 @@ class CategoryEnum :
     VBF_DIMUON=4
     VBF_RESOLVED_DIELECTRON=5
     VBF_MERGED_DIELECTRON=6
+    HIPTT_DIMUON=7
+    HIPTT_RESOLVED_DIELECTRON=8
+    HIPTT_MERGED_DIELECTRON=9
 
     VBF_CHANNELS = [VBF_DIMUON,VBF_RESOLVED_DIELECTRON,VBF_MERGED_DIELECTRON]
     GGF_CHANNELS = [GGF_DIMUON,GGF_RESOLVED_DIELECTRON,GGF_MERGED_DIELECTRON]
+    PTT_CHANNELS = [HIPTT_DIMUON,HIPTT_RESOLVED_DIELECTRON,HIPTT_MERGED_DIELECTRON]
 
 def GetPlotText(channel,category) :
     _text = ''
     if category :
-        _text = {CategoryEnum.GGF_DIMUON             :['ggF Dimuon channel'    ],
-                 CategoryEnum.GGF_RESOLVED_DIELECTRON:['ggF Resolved e channel'],
-                 CategoryEnum.GGF_MERGED_DIELECTRON  :['ggF Merged e channel'  ],
+        _text = {CategoryEnum.GGF_DIMUON             :['Inclusive Dimuon channel'    ],
+                 CategoryEnum.GGF_RESOLVED_DIELECTRON:['Inclusive Resolved e channel'],
+                 CategoryEnum.GGF_MERGED_DIELECTRON  :['Inclusive Merged e channel'  ],
                  CategoryEnum.VBF_DIMUON             :['VBF Dimuon channel'    ],
                  CategoryEnum.VBF_RESOLVED_DIELECTRON:['VBF Resolved e channel'],
                  CategoryEnum.VBF_MERGED_DIELECTRON  :['VBF Merged e channel'  ],
+                 CategoryEnum.HIPTT_DIMUON             :['high-p_{TThrust} Dimuon channel'    ],
+                 CategoryEnum.HIPTT_RESOLVED_DIELECTRON:['high-p_{TThrust} Resolved e channel'],
+                 CategoryEnum.HIPTT_MERGED_DIELECTRON  :['high-p_{TThrust} Merged e channel'  ],
                  }.get(category,[])
     else :
         _text = {ChannelEnum.DIMUON             : ['Dimuon channel'    ],
@@ -64,7 +71,7 @@ def weightscale_hyystar(tfile,is_h015d=False) :
 
         #print 'Processing %s'%(t_file.GetName())
 
-        weighted_histo = GetWeightedCutflowHistogram(t_file)
+        weighted_histo = GetWeightedCutflowHistogram(t_file) # do not worry - onlyDalitz is below this!
         tmp_xAOD  = weighted_histo.GetBinContent(1) # hopefully unskimmed MC sumw
         tmp_DxAOD = weighted_histo.GetBinContent(2) # hopefully unskimmed MC sumw
 
@@ -125,6 +132,37 @@ def GetFbForMCNormalization(theyear) :
 
     return 1.0
 
+def AddRandomRunNumberToWeightInCaseOf2015or2016(weight,theyear) :
+    ret_weight = weight
+
+    ## IMPORTANT NOTE: If 2015-only or 2016-only, we use RandomRunNumbers to put this
+    ## into action for mc16a. This is because RandomRunNumbers is how triggers are turned on/of in mc16a.
+    ## (See other important note in HggStarHelpers.GetFbForMCNormalization)
+    if theyear == YEAR.y2015 :
+        ret_weight += '*(EventInfoAuxDyn.RandomRunNumber < 290000)'
+    if theyear == YEAR.y2016 :
+        ret_weight += '*(EventInfoAuxDyn.RandomRunNumber > 290000)'
+
+    return ret_weight
+
+def FixFbLabelOnPlotFor2015or2016(can,theyear) :
+    import PlotFunctions as plotfunc
+
+    # Fix fb label for 2015-only and 2016-only (to be used in tandem with AddRandomRunNumber above)
+    if theyear in [YEAR.y2015,YEAR.y2016] :
+        fb = {YEAR.y2015:3.2,YEAR.y2016:33.0}.get(theyear)
+        text_can = can
+        if plotfunc.GetTopPad(can) :
+            text_can = plotfunc.GetTopPad(can)
+        for prim in text_can.GetListOfPrimitives() :
+            if '_text' in prim.GetName() :
+                for entry in prim.GetListOfPrimitives() :
+                    if '36.2' in entry.GetLabel() :
+                        entry.SetLabel(entry.GetLabel().replace('36.2','%.1f'%(fb)))
+        text_can.Modified()
+
+    return
+
 def SherpaKfactor1p3(tfile) :
     Sherpa_NLO = ['301535','301536','301899','301900','301901','301902','301903','301904']
     checkSherpa = list(a in tfile.GetName() for a in Sherpa_NLO)
@@ -178,6 +216,17 @@ def SF_signalxN(tfile,scalefactor) :
 
     return 1
 
+def weightscale_hyystar_yearAware(tfile,theyear,higgsSF=1) :
+    weight = weightscale_hyystar(tfile)
+
+    if theyear == YEAR.y20151617 :
+        weight = weight* SF_80fb(tfile)
+
+    if theyear == YEAR.y2015161718 :
+        weight = weight* SF_139fb(tfile)
+
+    return weight * SF_signalxN(tfile,higgsSF)
+
 StandardPlotLabels = {
     # Now possible via regular expressions (use % instead of .*)
     '%Sherpa_CT10_eegammaPt10_35%'   :'p_{T}^{#gamma}#in[10,35]',
@@ -195,6 +244,11 @@ StandardPlotLabels = {
     '%345963%'                       :'WmH H#rightarrow#gamma*#gamma',
     '%345964%'                       :'WpH H#rightarrow#gamma*#gamma',
     '%345965%'                       :'ZH H#rightarrow#gamma*#gamma',
+    'Sh_228_eey'                     :'Sherpa ee#gamma',
+    'Sh_228_mmy'                     :'Sherpa #mu#mu#gamma',
+    'HiggsToGammaGamma'              :'H#rightarrow#gamma#gamma',
+    '%Diphoton%'                     :'SM #gamma#gamma',
+    '%361106%'                       :'Z#rightarrow^{}ee',
     }
 
 StandardSampleMerging = {
@@ -202,7 +256,22 @@ StandardSampleMerging = {
     'Sherpa_eegamma':'%Sherpa_CT10_eegamma%',
     'Sherpa_mmgamma':'%Sherpa_CT10_mumugamma%',
     'AllHiggs':'%gamstargam%',
+    'Sh_228_eey': '%700001%',
+    'Sh_228_mmy': '%700002%',
+    'HiggsToGammaGamma':['%343981%',],
     }
+
+def MergeHiggsProductionModesSeparately(mergesamples) :
+    try :
+        mergesamples.pop('AllHiggs')
+    except KeyError :
+        pass
+
+    mergesamples['VBF H'] = '%345834%'
+    mergesamples['VH'   ] = ['%345963%','%345964%','%345965%']
+    mergesamples['ggF'  ] = '%345961%'
+
+    return
 
 StandardHistFormat = {
     'HGamEventInfoAuxDyn.m_ll/1000.'                      :[100,  0,120,'m_{ll} [GeV]'                ],
@@ -214,8 +283,8 @@ StandardHistFormat = {
     'HGamEventInfoAuxDyn.Resolved_dRExtrapTrk12'          :[100,  0,  2,'#Delta^{}R_{trktrk} (extrap.)'],
     'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly' :[100,  0,  1,'p^{ll}_{T}/m_{ll#gamma}'     ],
     'HGamEventInfoAuxDyn.pt_ll/1000.'                     :[100,  0,200,'p^{ll}_{T} [GeV]'            ],
-    'HGamEventInfoAuxDyn.deltaEta_trktrk_IP'              :[100, -1, 1,'Interaction Point #Delta#eta_{tracks} [GeV]'],
-    'HGamEventInfoAuxDyn.deltaPhi_trktrk_IP'              :[100, -1, 1,'Interaction Point #Delta#phi_{tracks} [GeV]'],
+    'HGamEventInfoAuxDyn.deltaEta_trktrk_IP'              :[100, -1, 1,'Interaction Point #Delta#eta_{tracks}'],
+    'HGamEventInfoAuxDyn.deltaPhi_trktrk_IP'              :[100, -3.03, 3.03,'Interaction Point #Delta#phi_{tracks}'],
     'HGamEventInfoAuxDyn.mu'                              :[ 80,  0,80,'<mu>'],
     # Truth-only variables
     'HGamTruthEventInfoAuxDyn.deltaR_l1l2_h1'             :[100,  0,  2,'Truth #Delta^{}R_{ll}'          ],
@@ -229,17 +298,18 @@ StandardHistFormat = {
     'HGamMuonsAuxDyn.eta'                                 :[100,-2.8,2.8,'#eta^{#mu}'              ],
     # Electron variables
     'HGamElectronsAuxDyn.pt[0]/1000.'                     :[100,  0,200,'Leading p^{e}_{T} [GeV]'],
-    'HGamElectronsAuxDyn.pt[1]/1000.'                     :[100,  0, 60,'Sublead p^{e}_{T} [GeV]'],
+    'HGamElectronsAuxDyn.pt[1]/1000.'                     :[100,  0, 30,'Sublead p^{e}_{T} [GeV]'],
     # Photon variables
     'HGamPhotonsAuxDyn.pt[0]/1000.'                       :[100,  0,200,'p^{#gamma}_{T} [GeV]'],
     'HGamPhotonsAuxDyn.eta[0]'                            :[100,-2.7,2.7,'#eta^{#gamma}'      ],
     'HGamPhotonsAuxDyn.eta_s2[0]'                         :[100,-2.7,2.7,'#eta^{#gamma}_{s2}' ],
     'HGamPhotonsAuxDyn.topoetcone40[0]/HGamPhotonsAuxDyn.pt[0]' :[50,-0.05,0.5,'TopoE_{T}^{cone40}/p_{T}'],
     # VBF variables
-    'HGamEventInfoAuxDyn.Deta_j_j'       :[ 30,  2,    8,'#Delta#eta_{jj}'           ],
+    'HGamEventInfoAuxDyn_Deta_j_j'       :[ 30,  0,    8,'#Delta#eta_{jj}'           ],
     'HGamEventInfoAuxDyn.Dphi_lly_jj'    :[ 12,1.75, 3.15,'#Delta#phi_{ll#gamma-jj}' ],
     'HGamEventInfoAuxDyn.Dy_j_j'         :[ 30,  2,    8,'#Delta^{}y_{jj}'           ],
     'fabs(HGamEventInfoAuxDyn.Zepp_lly)' :[ 20,  0,    5,'|#eta_{Zepp}|'             ],
+    'HGamEventInfoAuxDyn.Zepp_lly'       :[ 20, -5,    5,'#eta_{Zepp}'               ],
     'HGamEventInfoAuxDyn.m_jj/1000.'     :[ 46, 80, 1000,'m_{jj} [GeV]'              ],
     'HGamEventInfoAuxDyn.pTt_lly/1000.'  :[ 40,  0,  200,'p^{Tt} [GeV]'              ],
     'HGamEventInfoAuxDyn.pT_llyjj/1000.' :[ 25,  0,  120,'p_{Tll#gamma^{}jj} [GeV]'  ],
@@ -336,6 +406,53 @@ for k in ['HGamElectronsAuxDyn.eta_s2',
     StandardHistRebin[k+'[0]'] = egamma_binning
     StandardHistRebin[k+'[1]'] = egamma_binning
 
+def customRebin(*input) :
+    # input is of the form (low,high,increment, high,increment, high,increment...)
+    out = []
+    last = input[-2]
+    low = input[0]
+    input = input[1:]
+
+    for i in range(len(input)/2) :
+        high = input[0]
+        increment = input[1]
+        out += list(a*increment for a in range(int(low/increment),int(high/increment)))
+        low = high
+        input = input[2:]
+    return out
+
+def AddClassicRebinning(histformat,rebin) :
+
+    tmp_histformat = {
+        'HGamMuonsAuxDyn.pt[0]/1000.'            : [300,0,150,StandardHistFormat['HGamMuonsAuxDyn.pt[0]/1000.'            ][3]],
+        'HGamMuonsAuxDyn.pt[1]/1000.'            : [120,0, 60,StandardHistFormat['HGamMuonsAuxDyn.pt[1]/1000.'            ][3]],
+        'HGamElectronsAuxDyn.pt[0]/1000.'        : [300,0,150,StandardHistFormat['HGamElectronsAuxDyn.pt[0]/1000.'        ][3]],
+        'HGamElectronsAuxDyn.pt[1]/1000.'        : [120,0, 60,StandardHistFormat['HGamElectronsAuxDyn.pt[1]/1000.'        ][3]],
+        'HGamGSFTrackParticlesAuxDyn.pt[0]/1000.': [300,0,150,StandardHistFormat['HGamGSFTrackParticlesAuxDyn.pt[0]/1000.'][3]],
+        'HGamGSFTrackParticlesAuxDyn.pt[1]/1000.': [120,0, 60,StandardHistFormat['HGamGSFTrackParticlesAuxDyn.pt[1]/1000.'][3]],
+        'HGamPhotonsAuxDyn.pt[0]/1000.'          : [300,0,150,StandardHistFormat['HGamPhotonsAuxDyn.pt[0]/1000.'          ][3]],
+        'HGamEventInfoAuxDyn.pt_ll/1000.'        : [300,0,150,StandardHistFormat['HGamEventInfoAuxDyn.pt_ll/1000.'        ][3]],
+        'HGamEventInfoAuxDyn.pt_lly/1000.'       : [300,0,150,StandardHistFormat['HGamEventInfoAuxDyn.pt_lly/1000.'       ][3]],
+        }
+
+    tmp_rebin = {
+        'HGamMuonsAuxDyn.pt[0]/1000.'            : customRebin(0,40,2,  80,2,  100,5,  150,10),
+        'HGamMuonsAuxDyn.pt[1]/1000.'            : customRebin(0,10,0.5,  40,1,  60,2),
+        'HGamElectronsAuxDyn.pt[0]/1000.'        : customRebin(0,40,2,  80,2,  100,5,  150,10),
+        'HGamElectronsAuxDyn.pt[1]/1000.'        : customRebin(0,10,0.5, 40,1,  60,4),
+        'HGamGSFTrackParticlesAuxDyn.pt[0]/1000.': customRebin(0,40,2,  80,2,  100,5,  150,10),
+        'HGamGSFTrackParticlesAuxDyn.pt[1]/1000.': customRebin(0,10,1,  40,1,  60,2),
+        'HGamPhotonsAuxDyn.pt[0]/1000.'          : customRebin(0,40,2,  80,2,  100,5,  150,10),
+        'HGamEventInfoAuxDyn.pt_ll/1000.'        : customRebin(0,40,2,  80,2,  100,5,  150,10),
+        'HGamEventInfoAuxDyn.pt_lly/1000.'       : customRebin(0,40,2,  60,2,  100,5,  150,10),
+        }
+
+    for k in tmp_histformat.keys() :
+        histformat[k] = tmp_histformat[k]
+    for k in tmp_rebin.keys() :
+        rebin[k] = tmp_rebin[k]
+    return
+
 class TriggerEnum :
     HLT_e24_lhmedium_L1EM20VH                           =  0
     HLT_e60_lhmedium                                    =  1
@@ -367,6 +484,34 @@ class TriggerEnum :
     HLT_g35_loose_L1EM22VHI_mu15noL1_mu2noL1            = 27
     HLT_g35_loose_L1EM24VHI_mu15_mu2noL1                = 28
     HLT_g35_tight_icalotight_L1EM24VHI_mu15noL1_mu2noL1 = 29
+
+def customNormalizeToDataSidebands(var,sig_hists=None,bkg_hists=None,data_hist=None) :
+
+    def integral(h,minval,maxval) :
+        return h.Integral(h.FindBin(minval*(1+1e-6)),h.FindBin(maxval*(1-1e-6)))
+
+    if var == 'HGamEventInfoAuxDyn.m_lly/1000.' :
+
+        sum_bkg = 0
+        for hist in bkg_hists :
+            sum_bkg += (integral(hist,0,120) + integral(hist,130,200))
+
+        sum_data = (integral(data_hist,0,120) + integral(data_hist,130,200))
+
+        for hist in bkg_hists :
+            hist.Scale(sum_data/float(sum_bkg))
+
+    else :
+        sum_bkg = 0
+        for hist in bkg_hists :
+            sum_bkg += hist.Integral()
+
+        sum_data = data_hist.Integral()
+
+        for hist in bkg_hists :
+            hist.Scale(sum_data/float(sum_bkg))
+
+    return
 
 def NormalizeToDataSidebands(can,category) :
     import ROOT

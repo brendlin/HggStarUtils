@@ -56,10 +56,12 @@ def appendVBFCuts_v2(cuts,truth=False) :
     cuts.append('HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000. > 25')
     cuts.append('HGamAntiKt4EMPFlowJetsAuxDyn.pt[1]/1000. > 25')
     cuts.append('HGamEventInfoAuxDyn.m_jj/1000. > 500')
-    cuts.append('HGamEventInfoAuxDyn.Zepp_lly < 2.0')
+    cuts.append('fabs(HGamEventInfoAuxDyn.Zepp_lly) < 2.0')
     cuts.append('HGamEventInfoAuxDyn.DRmin_y_leps_2jets > 1.5')
     cuts.append('HGamEventInfoAuxDyn.Dphi_lly_jj > 2.8')
     cuts.append('HGamEventInfoAuxDyn.Deta_j_j > 2.7')
+    cuts.append('(HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000. > 30 || abs(HGamAntiKt4EMPFlowJetsAuxDyn[0].eta) < 2.5)')
+    cuts.append('(HGamAntiKt4EMPFlowJetsAuxDyn.pt[1]/1000. > 30 || abs(HGamAntiKt4EMPFlowJetsAuxDyn[1].eta) < 2.5)')
 
     return
 
@@ -119,6 +121,14 @@ def appendMesonCuts(cuts,channel) :
 
     return
 
+def appendByHandSRCuts(cuts,channel) :
+    cuts.append('HGamEventInfoAuxDyn.m_ll < 30000')
+    cuts.append('(HGamEventInfoAuxDyn.m_lly > 105000 && HGamEventInfoAuxDyn.m_lly < 160000)')
+    cuts.append('HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly > 0.3')
+    cuts.append('HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly > 0.3')
+    appendMesonCuts(cuts,channel)
+    return
+
 def appendTriggerThresholds2018(cuts,channel) :
 
     if channel in [ChannelEnum.RESOLVED_DIELECTRON] :
@@ -142,6 +152,16 @@ def appendTriggerThresholds2018(cuts,channel) :
 
     return
 
+def appendMiddleDileptonMassCRCuts(cuts) :
+    cuts.append('HGamEventInfoAuxDyn.m_ll/1000. < 83.') # FSR only
+    cuts.append('HGamEventInfoAuxDyn.m_ll/1000. > 45.') # Our control region
+    return
+
+def appendLowerDileptonMassCRCuts(cuts) :
+    cuts.append('HGamEventInfoAuxDyn.m_ll/1000. < 45.') # our SR cut
+    cuts.append('HGamEventInfoAuxDyn.m_ll/1000. > 10.') # lly generator cut
+    cuts.append('HGamEventInfoAuxDyn.m_lly/1000. > 80.') # Closer to our SR
+    return
 
 def cutcomparisons_MllSliceStudy(truth=False) :
     # Mass cut slicing study
@@ -200,6 +220,19 @@ def cutcomparisons_SculptingStudy(variable='photonpt') :
         cutcomparisons['p^{ll}_{T}/m_{ll#gamma} > 0.33'] = ['HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly > 0.3333']
         cutcomparisons['p^{ll}_{T}/m_{ll#gamma} > 0.38'] = ['HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly > 0.38']
         cutcomparisons['p^{ll}_{T}/m_{ll#gamma} > 0.475'] = ['HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly > 0.475']
+
+    # mll/ptll
+    elif variable == 'mll/ptll' :
+        cutcomparisons['0.0 < m_{ll}/p^{ll}_{T} < 0.2'] = ['HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll > 0.0','HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 0.2']
+        cutcomparisons['0.2 < m_{ll}/p^{ll}_{T} < 0.4'] = ['HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll > 0.2','HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 0.4']
+        cutcomparisons['0.4 < m_{ll}/p^{ll}_{T} < 0.6'] = ['HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll > 0.4','HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 0.6']
+        cutcomparisons['0.6 < m_{ll}/p^{ll}_{T} < inf'] = ['HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll > 0.6','HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 100']
+
+    elif variable == 'mll' :
+        cutcomparisons['0 < m_{ll} < 10 GeV'] = ['HGamEventInfoAuxDyn.m_ll/1000. < 10']
+        cutcomparisons['10 < m_{ll} < 20 Gev'] = ['HGamEventInfoAuxDyn.m_ll/1000. > 10' ,'HGamEventInfoAuxDyn.m_ll/1000. < 20']
+        cutcomparisons['20 < m_{ll} < 30 GeV'] = ['HGamEventInfoAuxDyn.m_ll/1000. > 20','HGamEventInfoAuxDyn.m_ll/1000. < 30']
+        cutcomparisons['30 < m_{ll} < 50 GeV'] = ['HGamEventInfoAuxDyn.m_ll/1000. > 30','HGamEventInfoAuxDyn.m_ll/1000. < 50']
 
     else :
         print 'cutcomparisons_SculptingStudy: Do not understand variable %s. Doing nothing.'%(variable)

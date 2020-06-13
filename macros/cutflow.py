@@ -75,9 +75,15 @@ def main(options,args) :
             sig_hists[-1].Scale(GetCrossSectionBRfilterEff(trees_s[k]))
 
         class tmp_options :
-            mergesamples = {'All Higgs':'%gamstargam%'}
+            mergesamples = {'All Higgs':'%gamstargam%',
+                            'HtoGammaGamma':'%343981%',
+                            }
 
         sig_hists = anaplot.MergeSamples(sig_hists,tmp_options)
+        if len(sig_hists) > 1 :
+            print 'Error - merging did not work correctly. Correct above.'
+            import sys; sys.exit()
+
         print ' ^ ignore this number above ^'
 
         hist = sig_hists[0]
@@ -144,7 +150,8 @@ if __name__ == '__main__':
         print 'Error! Please specify a variable!'
         sys.exit()
 
-    channels = ['','Dimuon','ResolvedDielectron','MergedDielectron','AmbiguousDielectron']
+    channels = ['','Dimuon','ResolvedDielectron','MergedDielectron','AmbiguousDielectron',
+                'DimuonFullPhaseSpace','DielectronFullPhaseSpace','DielectronFullPhaseSpace_RecoResolved','DielectronFullPhaseSpace_RecoMerged']
     if options.channel not in channels :
         print 'Wrong channel! Pick from:',', '.join(channels)
         sys.exit()
