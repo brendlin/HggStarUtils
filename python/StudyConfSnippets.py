@@ -234,6 +234,13 @@ def cutcomparisons_SculptingStudy(variable='photonpt') :
         cutcomparisons['20 < m_{ll} < 30 GeV'] = ['HGamEventInfoAuxDyn.m_ll/1000. > 20','HGamEventInfoAuxDyn.m_ll/1000. < 30']
         cutcomparisons['30 < m_{ll} < 50 GeV'] = ['HGamEventInfoAuxDyn.m_ll/1000. > 30','HGamEventInfoAuxDyn.m_ll/1000. < 50']
 
+    # mll/ptll
+    elif variable == 'drll' :
+        cutcomparisons['0.0 < #Delta^{}R_{ll} < 0.1'] = ['HGamEventInfoAuxDyn.deltaR_ll > 0.0','HGamEventInfoAuxDyn.deltaR_ll < 0.1']
+        cutcomparisons['0.1 < #Delta^{}R_{ll} < 0.3'] = ['HGamEventInfoAuxDyn.deltaR_ll > 0.1','HGamEventInfoAuxDyn.deltaR_ll < 0.3']
+        cutcomparisons['0.3 < #Delta^{}R_{ll} < 0.5'] = ['HGamEventInfoAuxDyn.deltaR_ll > 0.3','HGamEventInfoAuxDyn.deltaR_ll < 0.5']
+        cutcomparisons['0.5 < #Delta^{}R_{ll} < inf'] = ['HGamEventInfoAuxDyn.deltaR_ll > 0.5','HGamEventInfoAuxDyn.deltaR_ll < 100']
+
     else :
         print 'cutcomparisons_SculptingStudy: Do not understand variable %s. Doing nothing.'%(variable)
 
@@ -262,5 +269,53 @@ def forwardJetStudyModifications(cuts,mergesamples,labels,
     mergesamples['VBF'] = '%345834%'
     labels['AllHiggs'] = 'ggF+others%s'%('^{ }#times^{ }%d'%(higgsSF) if higgsSF != 1 else '')
     labels['VBF'] = 'VBF%s'%('^{ }#times^{ }%d'%(higgsSF) if higgsSF != 1 else '')
+
+    return
+
+def makeROCCurve(var,sig_hists=None,bkg_hists=None,data_hist=None) :
+
+    if len(sig_hists) != 1 or len(bkg_hists) != 1 :
+        return
+
+    import PyAnalysisPlotting as pyanaplot
+    import PlotFunctions as plotfunc
+    import ROOT
+    import HggStarHelpers
+
+    roc_curve_can = None
+
+    for i in plotfunc.tobject_collector :
+        if i.GetName() == 'roc_curve':
+            roc_curve_can = i
+            break
+
+    if not roc_curve_can :
+        roc_curve_can = ROOT.TCanvas('roc_curve','roc_curve',500,500)
+        plotfunc.tobject_collector.append(roc_curve_can)
+
+    def getROC(sighist,bkghist) :
+        gr = ROOT.TGraph()
+        gr.SetName(pyanaplot.CleanUpName(var))
+        gr.SetTitle(HggStarHelpers.StandardHistFormat[var][3])
+        gr.SetLineWidth(2)
+        for bin in range(sighist.GetNbinsX() + 1) :
+            sigtot = sighist.Integral(0,sighist.GetNbinsX()+1)
+            sigeff = sighist.Integral(0,bin)/float(sigtot)
+
+            bkgtot = bkghist.Integral(0,bkghist.GetNbinsX()+1)
+            bkgeff = bkghist.Integral(0,bin)/float(bkgtot)
+
+            gr.SetPoint(bin,sigeff,bkgeff)
+
+        return gr
+
+    gr = getROC(sig_hists[0],bkg_hists[0])
+    plotfunc.AddHistogram(roc_curve_can,gr,drawopt='l')
+    plotfunc.SetColors(roc_curve_can)
+    plotfunc.MakeLegend(roc_curve_can,0.20,0.74,0.54,0.90)
+    plotfunc.SetAxisLabels(roc_curve_can,'Signal efficiency','Bkg efficiency')
+
+    text = ['Signal versus Z#rightarrow^{}ee FSR']
+    plotfunc.DrawText(roc_curve_can,text,.2,.60,.54,.74,totalentries=3)
 
     return
