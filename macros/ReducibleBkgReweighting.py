@@ -26,9 +26,9 @@ CategoryNames_ysy = {
     'VBF_DIMUON'             :'VBF Dimuon',
     'VBF_RESOLVED_DIELECTRON':'VBF Resolved Electron',
     'VBF_MERGED_DIELECTRON'  :'VBF Merged Electron',
-    'HIPTT_DIMUON'             :'High-p_{TThrust} Dimuon',
-    'HIPTT_RESOLVED_DIELECTRON':'High-p_{TThrust} Resolved Electron',
-    'HIPTT_MERGED_DIELECTRON'  :'High-p_{TThrust} Merged Electron',
+    'HIPTT_DIMUON'             :'High-pTThrust Dimuon',
+    'HIPTT_RESOLVED_DIELECTRON':'High-pTThrust Resolved Electron',
+    'HIPTT_MERGED_DIELECTRON'  :'High-pTThrust Merged Electron',
     }
 
 xp = '((x-132.5)/(160-105))'
@@ -347,12 +347,13 @@ def main(options,args) :
         gen.Rebin(rebin)
         data_blinded.Rebin(rebin)
         data_blinded.SetTitle('Data')
-        #data_blinded.SetBinErrorOption(ROOT.TH1.kPoisson);
+        data_blinded.SetBinErrorOption(ROOT.TH1.kPoisson)
         gen.SetMarkerSize(0); gen.SetLineColor(1); gen.SetLineWidth(2); gen.SetFillColor(1)
         gen.SetFillStyle(3254);
         gen.SetTitle('SM')
         plotfunc.AddHistogram(main_can,gen,drawopt='E2')
         taxisfunc.AutoFixAxes(main_can)
+        p_chi2 = None
 
         if False :
             # RATIO
@@ -361,18 +362,32 @@ def main(options,args) :
             anaplot.RatioRangeAfterBurner(main_can)
         else :
             # PULL
-            plotfunc.AddRatio(main_can,data_blinded,gen,divide='pull')
+            unused,pull = plotfunc.AddRatio(main_can,data_blinded,gen,divide='pull')
             plotfunc.SetAxisLabels(main_can,'m_{ll#gamma} [GeV]','entries','pull')
+            nbins = 0
+            chi2 = 0
+
+            # Get the chi-square
+            for i in range(pull.GetNbinsX()) :
+                bc = pull.GetBinCenter(i+1)
+                if 120 < bc and bc < 130 :
+                    pull.SetBinContent(i+1,-99)
+                    continue
+                chi2 += pull.GetBinContent(i+1)*pull.GetBinContent(i+1)
+                nbins += 1
             anaplot.RatioRangeAfterBurner(main_can)
+            p_chi2 = ROOT.TMath.Prob(chi2, nbins - 1)
 
         the_text = [plotfunc.GetAtlasInternalText(),
                     plotfunc.GetSqrtsText(13)+', '+plotfunc.GetLuminosityText(139.0),
                     CategoryNames_ysy[c]
                     ]
-        plotfunc.DrawText(main_can,the_text,.2,.67,.61,.90,totalentries=3)
+        if p_chi2 != None :
+            the_text.append('p(#chi^{2}) = %.2f%%'%(p_chi2*100))
+        plotfunc.DrawText(main_can,the_text,.2,0.62,.61,.90,totalentries=4)
         plotfunc.MakeLegend(main_can,0.70,0.67,0.92,0.90,ncolumns=2,option=['f','f','f','f','p'])
         taxisfunc.SetXaxisRanges(main_can,105,160)
-        taxisfunc.AutoFixYaxis(plotfunc.GetTopPad(main_can),minzero=True)
+        taxisfunc.AutoFixYaxis(plotfunc.GetTopPad(main_can),forcemin=0.0001)
         tmp.append(main_can)
 
         for can in tmp :
