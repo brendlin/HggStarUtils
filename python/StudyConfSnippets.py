@@ -163,6 +163,109 @@ def appendLowerDileptonMassCRCuts(cuts) :
     cuts.append('HGamEventInfoAuxDyn.m_lly/1000. > 80.') # Closer to our SR
     return
 
+def appendPassLeadingLeptonID(cuts,channel) :
+    cuts_muon = ['HGamMuonsAuxDyn.passIPCut[0]']
+    cuts_resolved = ['abs(HGamGSFTrackParticlesAuxDyn.d0significance[0]) < 5',
+                     'abs(HGamGSFTrackParticlesAuxDyn.z0sinTheta[0]) < 0.5',
+                     # 'HGamElectronsAuxDyn.passIPCut[0]', # missing from MxAOD - calculate directly
+                     'HGamElectronsAuxDyn.isMedium[0]']
+    cuts_merged = [ ] # treat these as "subleading" cuts because they are the ones we invert
+    cuts += {ChannelEnum.DIMUON:cuts_muon,
+             ChannelEnum.RESOLVED_DIELECTRON:cuts_resolved,
+             ChannelEnum.MERGED_DIELECTRON:cuts_merged}.get(channel)
+
+def appendPassSubleadLeptonID(cuts,channel,) :
+    cuts_muon = ['HGamMuonsAuxDyn.passIPCut[1]']
+    cuts_resolved = ['abs(HGamGSFTrackParticlesAuxDyn.d0significance[1]) < 5',
+                     'abs(HGamGSFTrackParticlesAuxDyn.z0sinTheta[1]) < 0.5',
+                     # 'HGamElectronsAuxDyn.passIPCut[1]', # missing from MxAOD - calculate directly
+                     'HGamElectronsAuxDyn.isMedium[1]']
+    cuts_merged = ['abs(HGamGSFTrackParticlesAuxDyn.d0significance[0]) < 5',
+                   'abs(HGamGSFTrackParticlesAuxDyn.z0sinTheta[0]) < 0.5',
+                   'abs(HGamGSFTrackParticlesAuxDyn.d0significance[1]) < 5',
+                   'abs(HGamGSFTrackParticlesAuxDyn.z0sinTheta[1]) < 0.5',
+                   # 'HGamElectronsAuxDyn.passIPCut[0]', # missing from MxAOD - calculate directly
+                   'HGamElectronsAuxDyn.passTMVAPID[0]',
+                   'HGamElectronsAuxDyn.passDeltaPhiIPCut[0]']
+    cuts += {ChannelEnum.DIMUON:cuts_muon,
+             ChannelEnum.RESOLVED_DIELECTRON:cuts_resolved,
+             ChannelEnum.MERGED_DIELECTRON:cuts_merged}.get(channel)
+
+def appendFailSubleadLeptonID(cuts,channel,) :
+    cuts_muon = ['!HGamMuonsAuxDyn.passIPCut[1]']
+    cuts_resolved = [#'abs(HGamGSFTrackParticlesAuxDyn.d0significance[1]) < 5',
+                     #'abs(HGamGSFTrackParticlesAuxDyn.z0sinTheta[1]) < 0.5',
+                     #'HGamElectronsAuxDyn.passIPCut[1]', # missing from MxAOD - calculate directly
+                     '!HGamElectronsAuxDyn.isMedium[1]']
+    cuts_merged = [#'abs(HGamGSFTrackParticlesAuxDyn.d0significance[0]) < 5',
+                   #'abs(HGamGSFTrackParticlesAuxDyn.z0sinTheta[0]) < 0.5',
+                   #'abs(HGamGSFTrackParticlesAuxDyn.d0significance[1]) < 5',
+                   #'abs(HGamGSFTrackParticlesAuxDyn.z0sinTheta[1]) < 0.5',
+                   # 'HGamElectronsAuxDyn.passIPCut[0]', # missing from MxAOD - calculate directly
+                   '!HGamElectronsAuxDyn.passTMVAPID[0]',
+                   #'HGamElectronsAuxDyn.passDeltaPhiIPCut[0]',
+                   ]
+    cuts += {ChannelEnum.DIMUON:cuts_muon,
+             ChannelEnum.RESOLVED_DIELECTRON:cuts_resolved,
+             ChannelEnum.MERGED_DIELECTRON:cuts_merged}.get(channel)
+
+def appendPassLeadingLeptonIso(cuts,channel) :
+    cuts_muon = ['(HGamMuonsAuxDyn.ptvarcone30_TightTTVA_pt1000[0]/HGamMuonsAuxDyn.pt[0] < 0.06 || HGamMuonsAuxDyn.pt[0]/1000. > 50)',
+                 '(HGamMuonsAuxDyn.ptcone20_TightTTVA_pt1000[0]/HGamMuonsAuxDyn.pt[0] < 0.06 || HGamMuonsAuxDyn.pt[0]/1000. < 50)',
+                 # 'HGamMuonsAuxDyn.isIsoWithCorrTightTrackOnly_FixedRad[0]' # missing
+                 ]
+    cuts_resolved = ['HGamElectronsAuxDyn.isIsoWithCorrFCLoose[0]']
+    cuts_merged = [] # treat these as "subleading" cuts because they are the ones we invert
+    cuts += {ChannelEnum.DIMUON:cuts_muon,
+             ChannelEnum.RESOLVED_DIELECTRON:cuts_resolved,
+             ChannelEnum.MERGED_DIELECTRON:cuts_merged}.get(channel)
+
+def appendPassSubleadLeptonIso(cuts,channel) :
+    cuts_muon = [] # no isolation applied to subleading
+    cuts_resolved = [] # no isolation applied to subleading
+    cuts_merged = ['HGamElectronsAuxDyn.isIsoFCTight[0]']
+    cuts += {ChannelEnum.DIMUON:cuts_muon,
+             ChannelEnum.RESOLVED_DIELECTRON:cuts_resolved,
+             ChannelEnum.MERGED_DIELECTRON:cuts_merged}.get(channel)
+
+def appendPassAllLeptonCuts(cuts) :
+    # hack while we sort out the missing IP cut bit
+    cuts.append('HGamEventInfoAuxDyn.cutFlow >= 20')
+
+def appendPassPhotonID(cuts) :
+    cuts.append('HGamPhotonsAuxDyn.isTight[0]')
+
+def appendFailPhotonID(cuts) :
+    cuts.append('!HGamPhotonsAuxDyn.isTight[0]')
+
+def appendPassPhotonIso(cuts) :
+    cuts.append('HGamPhotonsAuxDyn.isIsoFixedCutLoose[0]')
+
+def appendFailPhotonIso(cuts) :
+    cuts.append('!HGamPhotonsAuxDyn.isIsoFixedCutLoose[0]')
+
+def appendFailPhotonIDorIso(cuts) :
+    cuts.append('(!HGamPhotonsAuxDyn.isTight[0] || !HGamPhotonsAuxDyn.isIsoFixedCutLoose[0])')
+
+def appendExtraCutByTag(cuts,tag=None) :
+    extra = {
+        'mll_50':'HGamEventInfoAuxDyn.m_ll < 50000',
+        'mll_40':'HGamEventInfoAuxDyn.m_ll < 40000',
+        'mll_30':'HGamEventInfoAuxDyn.m_ll < 30000',
+        'mll_20':'HGamEventInfoAuxDyn.m_ll < 20000',
+        'ptll_7':'HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 0.7',
+        'ptll_6':'HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 0.6',
+        'ptll_5':'HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 0.5',
+        'ptll_4':'HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 0.4',
+        }.get(tag)
+
+    if not extra :
+        print 'Error with tag (mll_20 etc)'
+        import sys; sys.exit()
+
+    cuts.append(extra)
+    return
+
 def cutcomparisons_MllSliceStudy(truth=False) :
     # Mass cut slicing study
     from collections import OrderedDict

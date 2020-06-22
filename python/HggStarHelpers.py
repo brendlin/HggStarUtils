@@ -42,6 +42,24 @@ def GetPlotText(channel,category) :
 
     return _text
 
+
+class REGION :
+    CR_ZHIGH = 0
+    CR_ZLOW  = 1
+    SR = 2
+    SR_VBF = 3
+    CR_PHOTON_INVERTID = 4
+    CR_PHOTON_INVERTISO = 5
+    CR_PHOTON_INVERTIDORISO = 6
+    CR_LEPTON_INVERTID = 7
+
+    INVERTED_IDS = [CR_PHOTON_INVERTID,CR_PHOTON_INVERTISO,CR_PHOTON_INVERTIDORISO,CR_LEPTON_INVERTID]
+
+def GetRegionName(region) :
+    return {REGION.CR_LEPTON_INVERTID:'yj',
+            REGION.CR_PHOTON_INVERTIDORISO:'llj',
+            }.get(region)
+
 def GetWeightedCutflowHistogram(t_file) :
     import re
     for i in t_file.GetListOfKeys() :
@@ -248,7 +266,12 @@ StandardPlotLabels = {
     'Sh_228_mmy'                     :'Sherpa #mu#mu#gamma',
     'HiggsToGammaGamma'              :'H#rightarrow#gamma#gamma',
     '%Diphoton%'                     :'SM #gamma#gamma',
-    '%361106%'                       :'Z#rightarrow^{}ee',
+    'ZtoEE'                          :'Z#rightarrow^{}ee',
+    'enugamma'                       :'e#nu#gamma',
+    #'enugamma_pty_15_35'             :'e#nu#gamma(15)',
+    #'enugamma_pty_35_70'             :'e#nu#gamma(35)',
+    #'enugamma_pty_70_140'            :'e#nu#gamma(70)',
+    #'enugamma_pty_140_E_CMS'         :'e#nu#gamma(140)',
     }
 
 StandardSampleMerging = {
@@ -259,6 +282,12 @@ StandardSampleMerging = {
     'Sh_228_eey': '%700001%',
     'Sh_228_mmy': '%700002%',
     'HiggsToGammaGamma':['%343981%',],
+    'ZtoEE':'%361106%',
+    'enugamma'              :'%enugamma_pty%'          ,
+    #'enugamma_pty_15_35'    :'%enugamma_pty_15_35%'    ,
+    #'enugamma_pty_35_70'    :'%enugamma_pty_35_70%'    ,
+    #'enugamma_pty_70_140'   :'%enugamma_pty_70_140%'   ,
+    #'enugamma_pty_140_E_CMS':'%enugamma_pty_140_E_CMS%',
     }
 
 def MergeHiggsProductionModesSeparately(mergesamples) :
@@ -282,6 +311,7 @@ StandardHistFormat = {
     'HGamEventInfoAuxDyn.deltaR_track4mom'                :[100,  0,  2,'#Delta^{}R_{trktrk}'         ],
     'HGamEventInfoAuxDyn.Resolved_dRExtrapTrk12'          :[100,  0,  2,'#Delta^{}R_{trktrk} (extrap.)'],
     'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly' :[100,  0,  1,'p^{ll}_{T}/m_{ll#gamma}'     ],
+    'HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll'  :[100,  0,1.5,'m_{ll}/p^{ll}_{T}'           ],
     'HGamEventInfoAuxDyn.pt_ll/1000.'                     :[100,  0,200,'p^{ll}_{T} [GeV]'            ],
     'HGamEventInfoAuxDyn.deltaEta_trktrk_IP'              :[100, -1, 1,'Interaction Point #Delta#eta_{tracks}'],
     'HGamEventInfoAuxDyn.deltaPhi_trktrk_IP'              :[100, -3.03, 3.03,'Interaction Point #Delta#phi_{tracks}'],
@@ -299,6 +329,8 @@ StandardHistFormat = {
     # Electron variables
     'HGamElectronsAuxDyn.pt[0]/1000.'                     :[100,  0,200,'Leading p^{e}_{T} [GeV]'],
     'HGamElectronsAuxDyn.pt[1]/1000.'                     :[100,  0, 30,'Sublead p^{e}_{T} [GeV]'],
+    'HGamElectronsAuxDyn.topoetcone20[0]/HGamElectronsAuxDyn.pt[0]':[50,-0.1,0.5,'Leading electron p^{cone20}_{T}/p_{T}'],
+    'HGamElectronsAuxDyn.topoetcone20[1]/HGamElectronsAuxDyn.pt[1]':[50,-0.1,0.5,'Sublead electron p^{cone20}_{T}/p_{T}'],
     # Photon variables
     'HGamPhotonsAuxDyn.pt[0]/1000.'                       :[100,  0,200,'p^{#gamma}_{T} [GeV]'],
     'HGamPhotonsAuxDyn.eta[0]'                            :[100,-2.7,2.7,'#eta^{#gamma}'      ],
@@ -416,9 +448,11 @@ def customRebin(*input) :
     for i in range(len(input)/2) :
         high = input[0]
         increment = input[1]
-        out += list(a*increment for a in range(int(low/increment),int(high/increment)))
+        out += list(float('%.5g'%(a*increment)) for a in range(int(round(low/increment,0)),int(round(high/increment,0))))
         low = high
         input = input[2:]
+
+    out.append(last)
     return out
 
 def AddClassicRebinning(histformat,rebin) :
@@ -433,6 +467,9 @@ def AddClassicRebinning(histformat,rebin) :
         'HGamPhotonsAuxDyn.pt[0]/1000.'          : [300,0,150,StandardHistFormat['HGamPhotonsAuxDyn.pt[0]/1000.'          ][3]],
         'HGamEventInfoAuxDyn.pt_ll/1000.'        : [300,0,150,StandardHistFormat['HGamEventInfoAuxDyn.pt_ll/1000.'        ][3]],
         'HGamEventInfoAuxDyn.pt_lly/1000.'       : [300,0,150,StandardHistFormat['HGamEventInfoAuxDyn.pt_lly/1000.'       ][3]],
+        'HGamEventInfoAuxDyn.deltaR_ll'          : [150,0,  3,StandardHistFormat['HGamEventInfoAuxDyn.deltaR_ll'          ][3]],
+        'HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll':[150,0,1.5,StandardHistFormat['HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll'][3]],
+        'HGamEventInfoAuxDyn.m_ll/1000.'         : [100,0, 50,StandardHistFormat['HGamEventInfoAuxDyn.m_ll/1000.'         ][3]],
         }
 
     tmp_rebin = {
@@ -445,6 +482,9 @@ def AddClassicRebinning(histformat,rebin) :
         'HGamPhotonsAuxDyn.pt[0]/1000.'          : customRebin(0,40,2,  80,2,  100,5,  150,10),
         'HGamEventInfoAuxDyn.pt_ll/1000.'        : customRebin(0,40,2,  80,2,  100,5,  150,10),
         'HGamEventInfoAuxDyn.pt_lly/1000.'       : customRebin(0,40,2,  60,2,  100,5,  150,10),
+        'HGamEventInfoAuxDyn.deltaR_ll'          : customRebin(0,0.2,0.02,  0.6,0.1,  2,0.2,  3,0.5),
+        'HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll': customRebin(0,0.5,0.02, 1.0,0.05, 1.5,0.2),
+        'HGamEventInfoAuxDyn.m_ll/1000.'         : customRebin(0,20,1,  30,2,  50,5),
         }
 
     for k in tmp_histformat.keys() :
@@ -486,6 +526,9 @@ class TriggerEnum :
     HLT_g35_tight_icalotight_L1EM24VHI_mu15noL1_mu2noL1 = 29
 
 def customNormalizeToDataSidebands(var,sig_hists=None,bkg_hists=None,data_hist=None) :
+
+    if not bkg_hists or not data_hist :
+        return
 
     def integral(h,minval,maxval) :
         return h.Integral(h.FindBin(minval*(1+1e-6)),h.FindBin(maxval*(1-1e-6)))
