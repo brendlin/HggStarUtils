@@ -31,18 +31,29 @@ CategoryNames_ysy = {
     'HIPTT_MERGED_DIELECTRON'  :'High-pTThrust Merged Electron',
     }
 
+rebin = {
+    'GGF_DIMUON'             :12,
+    'GGF_RESOLVED_DIELECTRON':12,
+    'GGF_MERGED_DIELECTRON'  :12,
+    'VBF_DIMUON'             :44,
+    'VBF_RESOLVED_DIELECTRON':55,
+    'VBF_MERGED_DIELECTRON'  :20,
+    'HIPTT_DIMUON'             :44,
+    'HIPTT_RESOLVED_DIELECTRON':66,
+    'HIPTT_MERGED_DIELECTRON'  :20,
+    }
+
 xp = '((x-132.5)/(160-105))'
 functions_ysy = {
-    'GGF_DIMUON'               :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)'},
-    #'GGF_RESOLVED_DIELECTRON'  :{'yj':'[p0] + [p1]*%s + [p2]*%s*%s + [p3]*%s*%s*%s'%(xp,xp,xp,xp,xp,xp),'llj':'[p0] + [p1]*(x-132.5)/(160-105)'},
-    'GGF_RESOLVED_DIELECTRON'  :{'yj':'[p0] + [p1]*TMath::Exp(-[p2]*%s)'%(xp),'llj':'[p0] + [p1]*(x-132.5)/(160-105)'},
-    'GGF_MERGED_DIELECTRON'    :{'yj':'[p0] + [p1]*(x-132.5)/(160-105) + [p2]*(x-132.5)*(x-132.5)/((160-105)*(160-105))','llj':'[p0] + [p1]*(x-132.5)/(160-105)'},
-    'VBF_DIMUON'               :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)'},
-    'VBF_RESOLVED_DIELECTRON'  :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)'},
-    'VBF_MERGED_DIELECTRON'    :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)'},
-    'HIPTT_DIMUON'             :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)'},
-    'HIPTT_RESOLVED_DIELECTRON':{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)'},
-    'HIPTT_MERGED_DIELECTRON'  :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)'},
+    'GGF_DIMUON'               :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'0'},
+    'GGF_RESOLVED_DIELECTRON'  :{'yj_hidr':'[p0] + [p1]*TMath::Exp(-[p2]*%s)'%(xp),'llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj':'[p0] + [p1]*(x-132.5)/(160-105)'},
+    'GGF_MERGED_DIELECTRON'    :{'yj':'[p0] + [p1]*(x-132.5)/(160-105) + [p2]*(x-132.5)*(x-132.5)/((160-105)*(160-105))','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'0'},
+    'VBF_DIMUON'               :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'0'},
+    'VBF_RESOLVED_DIELECTRON'  :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'[p0] + [p1]*TMath::Exp(-[p2]*%s)'%(xp)},
+    'VBF_MERGED_DIELECTRON'    :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'0'},
+    'HIPTT_DIMUON'             :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'0'},
+    'HIPTT_RESOLVED_DIELECTRON':{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'[p0] + [p1]*TMath::Exp(-[p2]*%s)'%(xp)},
+    'HIPTT_MERGED_DIELECTRON'  :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'0'},
 }
 
 ##################################################################################
@@ -120,18 +131,22 @@ def integral(hist,f,l) :
 def DoRescaleProcedure(gen,bkg,name,ci,c) :
     cans = []
     if integral(gen,105,160) == 0 :
-        return [],0,1,1
+        return [],[],1
     if integral(bkg,105,160) == 0 :
-        return [],0,1,1
+        return [],[],1
 
     # Print the "before" picture
     cans.append(plotfunc.RatioCanvas('UntouchedRatio_%02d_%s_%s'%(ci,c,name),'%d_%s_%s'%(ci,c,name),600,500))
     gen_rebin = plotfunc.AddHistogram(cans[-1],gen)
     bkg_rebin = bkg.Clone()
     bkg_rebin.SetName(bkg_rebin.GetName()+'_forRebinning')
-    
-    if bkg_rebin.Integral() < 200 :
-        RebinUntilSmallErrors(gen_rebin,bkg_rebin,binmin=105,binmax=160,errormax=1)
+
+    rebin_factor = rebin.get(c)
+    gen_rebin.Rebin(rebin_factor)
+    bkg_rebin.Rebin(rebin_factor)
+
+    #if bkg_rebin.Integral() < 200 :
+    #    rebin_factor = RebinUntilSmallErrors(gen_rebin,bkg_rebin,binmin=105,binmax=160,errormax=1)
     gen_rebin.Scale(integral(bkg_rebin,105,160)/integral(gen_rebin,105,160))
     
     unused,gen_bkg_ratio = plotfunc.AddRatio(cans[-1],bkg_rebin,gen_rebin)
@@ -145,7 +160,7 @@ def DoRescaleProcedure(gen,bkg,name,ci,c) :
     # Fit the ratio of the CR and the GEN with a line
     function = ROOT.TF1('%d_%s'%(ci,c),functions_ysy[c][name],105,160)
     function.SetLineColor(ROOT.kBlue)
-    if (integral(bkg,105,160) >= 50) :
+    if (integral(bkg,105,160) >= 20) :
         gen_bkg_ratio.Fit('%d_%s'%(ci,c))
     else :
         print 'Not enough events to do a fit! Setting parameters to 1,0.'
@@ -174,9 +189,9 @@ def DoRescaleProcedure(gen,bkg,name,ci,c) :
 
     #Tools.RebinUntilSmallErrors(gen_result,bkg,binmin=105,binmax=160,errormax=1)
     #gen_before.Rebin(10)
-    gen_before.SetMarkerColor(ROOT.kGray)
-    gen_before.SetFillColor(ROOT.kGray)
-    gen_before.SetLineColor(ROOT.kGray)
+    gen_before.SetMarkerColor(ROOT.kGray+1)
+    gen_before.SetFillColor(ROOT.kGray+1)
+    gen_before.SetLineColor(ROOT.kGray+1)
     gen_before.SetLineWidth(2)
     #gen_result.Rebin(10)
     #bkg.Rebin(10)
@@ -187,12 +202,16 @@ def DoRescaleProcedure(gen,bkg,name,ci,c) :
 
     # Print the "after" (rescaled) result
     cans.append(plotfunc.RatioCanvas('rescaled_%02d_%s_%s'%(ci,c,name),'%d_%s_%s_rescaled'%(ci,c,name),600,500))
+    gen_before.Rebin(rebin_factor)
     plotfunc.AddHistogram(cans[-1],gen_before)
+    bkg.Rebin(rebin_factor)
     plotfunc.AddHistogram(cans[-1],bkg)
+    gen_result.Rebin(rebin_factor)
     plotfunc.AddRatio(cans[-1],gen_result,bkg,divide='pull')
-    plotfunc.MakeLegend(cans[-1],0.64,0.70,0.74,0.87,option=['f','pl','f'])
+    plotfunc.MakeLegend(cans[-1],0.64,0.65,0.74,0.87,option=['f','pl','f'])
     taxisfunc.AutoFixAxes(cans[-1])
     taxisfunc.SetXaxisRanges(cans[-1],105,160)
+    taxisfunc.AutoFixYaxis(plotfunc.GetTopPad(cans[-1]),minzero=True)
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(cans[-1]),-4,4)
     plotfunc.SetAxisLabels(cans[-1],'m_{ll#gamma} [GeV]','entries','pull')
 
@@ -204,8 +223,7 @@ def DoRescaleProcedure(gen,bkg,name,ci,c) :
 
 def main(options,args) :
 
-    llj_file = ROOT.TFile(options.llj,'read')
-    yj_file = ROOT.TFile(options.yj,'read')
+    fakes_file = ROOT.TFile(options.fakes,'read')
     gen_file = ROOT.TFile(options.gen,'read')
     
     outfile = ROOT.TFile('out.root','RECREATE')
@@ -216,57 +234,72 @@ def main(options,args) :
         tmp = []
 
         gen = gen_file.Get('Template_c%d' %(i_cat+offset)).Clone()
-        yj  = yj_file .Get('DataCR_yj_c%d'%(i_cat+offset))
-        llj = llj_file.Get('DataCR_llj_c%d'%(i_cat+offset))
+        if 'RESOLVED' in c :
+            yj  = fakes_file.Get('DataCR_yj_lodr_c%d'%(i_cat+offset))
+            yj_hidr = fakes_file.Get('DataCR_yj_hidr_c%d'%(i_cat+offset))
+        else :
+            yj = fakes_file.Get('DataCR_yj_c%d'%(i_cat+offset))
+            yj_hidr = ROOT.TH1F()
+        llj = fakes_file.Get('DataCR_llj_c%d'%(i_cat+offset))
 
         gen.SetTitle('ll#gamma')
 
-        print c, gen.Integral(), yj.Integral(), llj.Integral()
+        #print c, gen.Integral(), yj.Integral(), llj.Integral()
         #continue
 
         data_blinded = gen_file.Get('Sidebands_c%d'%(i_cat+offset))
         data_integral = integral(data_blinded,105,160)
 
         outfile.cd()
-        data_blinded.Write()
+        data_blinded.Write('Sidebands_c%d'%(i_cat+1))
 
-        gen.Sumw2(); yj.Sumw2(); llj.Sumw2();
+        gen.Sumw2(); yj.Sumw2(); yj_hidr.Sumw2(); llj.Sumw2();
 
         # Get the parameters for the reweighting procedure
         yj_newcans,yj_pars,yj_integral_factor = DoRescaleProcedure(gen,yj,'yj',i_cat+offset,c)
+        yj_hidr_newcans,yj_hidr_pars,yj_hidr_integral_factor = DoRescaleProcedure(gen,yj_hidr,'yj_hidr',i_cat+offset,c)
         llj_newcans,llj_pars,llj_integral_factor = DoRescaleProcedure(gen,llj,'llj',i_cat+offset,c)
         tmp += yj_newcans
+        tmp += yj_hidr_newcans
         tmp += llj_newcans
+
+        #print 'yj_hidr_pars:',yj_hidr_pars
 
         # Get the fractions of lly, yj, llj
         fractions_file = open(options.fractions,'read')
         for l,line in enumerate(fractions_file) :
             if c not in line :
                 continue
-            print c,l,line
-            yj_frac = float(line.split()[-1])
-            llj_frac = float(line.split()[-2])
-            lly_frac = 1-yj_frac-llj_frac
+            #print c,l,line
+            yj_hidr_frac = float(line.split()[-1])
+            yj_frac = float(line.split()[-2])
+            llj_frac = float(line.split()[-3])
+            lly_frac = 1-yj_frac-llj_frac-yj_hidr_frac
         fractions_file.close()
-        print lly_frac,yj_frac,llj_frac
+        print lly_frac,yj_frac,yj_hidr_frac,llj_frac
 
         # The full reweighting function
-        norm_parameters = [lly_frac,yj_frac,yj_integral_factor,llj_frac,llj_integral_factor]
+        norm_parameters = [lly_frac,yj_frac,yj_integral_factor,yj_hidr_frac,yj_hidr_integral_factor,llj_frac,llj_integral_factor]
         yj_expr = functions_ysy[c]['yj']
+        yj_hidr_expr = functions_ysy[c]['yj_hidr']
         llj_expr = functions_ysy[c]['llj']
-        par_num = 5
+        par_num = len(norm_parameters)
         for ii in range(len(yj_pars)) :
             yj_expr = yj_expr.replace('[p%d]'%(ii),'[%d]'%(par_num))
+            par_num += 1
+        for ii in range(len(yj_hidr_pars)) :
+            yj_hidr_expr = yj_hidr_expr.replace('[p%d]'%(ii),'[%d]'%(par_num))
             par_num += 1
         for ii in range(len(llj_pars)) :
             llj_expr = llj_expr.replace('[p%d]'%(ii),'[%d]'%(par_num))
             par_num += 1
 
-        expr = '[0] + [1]*[2]*(%s) + [3]*[4]*(%s)'%(yj_expr,llj_expr)
+        expr = '[0] + [1]*[2]*(%s) + [3]*[4]*(%s) + [5]*[6]*(%s)'%(yj_expr,yj_hidr_expr,llj_expr)
         print expr
 
         function = ROOT.TF1('%d_%s'%(i_cat+offset,c),expr,105,160)
-        for ii,par in enumerate(norm_parameters + yj_pars + llj_pars) :
+        for ii,par in enumerate(norm_parameters + yj_pars + yj_hidr_pars + llj_pars) :
+            #print ii,par
             function.SetParameter(ii,par)
 
         data_integral = float(integral(data_blinded,105,120) + integral(data_blinded,130,160) )
@@ -276,12 +309,8 @@ def main(options,args) :
             print 'ERROR! GEN Integral for category %s is 0!'%(c)
             return
 
-        rebin = 1
-
-
         # lly for stack
         gen_lly_stack = gen.Clone(); gen_lly_stack.SetName(gen_lly_stack.GetName()+'_lly_forStack')
-        gen_lly_stack.Rebin(rebin)
 
         # yj for stack
         gen_yj_stack = gen.Clone(); gen_yj_stack.SetName(gen_yj_stack.GetName()+'_yj_forStack')
@@ -299,7 +328,23 @@ def main(options,args) :
             function_yj.SetParameter(ii+2,par)
         function_yj.SetRange(gen.GetBinLowEdge(1),gen.GetBinLowEdge(gen.GetNbinsX()+1))
         gen_yj_stack.Multiply(function_yj)
-        gen_yj_stack.Rebin(rebin)
+
+        # yj_hidr for stack
+        gen_yj_hidr_stack = gen.Clone(); gen_yj_hidr_stack.SetName(gen_yj_hidr_stack.GetName()+'_yj_hidr_forStack')
+        gen_yj_hidr_stack.SetTitle('#gamma^{}#font[12]{j}')
+        yj_hidr_expr = functions_ysy[c]['yj_hidr']
+        par_num = 2
+        for ii in range(len(yj_hidr_pars)) :
+            yj_hidr_expr = yj_hidr_expr.replace('[p%d]'%(ii),'[%d]'%(par_num))
+            par_num += 1
+        function_yj_hidr = ROOT.TF1('%d_%s'%(i_cat+offset,c),'[0]*[1]*(%s)'%(yj_hidr_expr),105,160)
+        print yj_hidr_expr
+        function_yj_hidr.SetParameter(0,yj_hidr_frac)
+        function_yj_hidr.SetParameter(1,yj_hidr_integral_factor)
+        for ii,par in enumerate(yj_hidr_pars) :
+            function_yj_hidr.SetParameter(ii+2,par)
+        function_yj_hidr.SetRange(gen.GetBinLowEdge(1),gen.GetBinLowEdge(gen.GetNbinsX()+1))
+        gen_yj_hidr_stack.Multiply(function_yj_hidr)
 
         # llj for stack
         gen_llj_stack = gen.Clone(); gen_llj_stack.SetName(gen_llj_stack.GetName()+'_llj_forStack')
@@ -317,8 +362,7 @@ def main(options,args) :
             function_llj.SetParameter(ii+2,par)
         function_llj.SetRange(gen.GetBinLowEdge(1),gen.GetBinLowEdge(gen.GetNbinsX()+1))
         gen_llj_stack.Multiply(function_llj)
-        gen_llj_stack.Rebin(rebin)
-        anaplot.PrepareBkgHistosForStack([gen_llj_stack,gen_yj_stack,gen_lly_stack],'')
+        anaplot.PrepareBkgHistosForStack([gen_llj_stack,gen_yj_stack,gen_lly_stack,gen_yj_hidr_stack],'')
 
         gen_integral_postRW = float(integral(gen,105,120)+integral(gen,130,160))
 
@@ -329,23 +373,33 @@ def main(options,args) :
         # scale everything
         gen_lly_stack.Scale( lly_frac * data_integral / gen_integral_postRW )
         gen_yj_stack.Scale( data_integral / gen_integral_postRW )
+        gen_yj_hidr_stack.Scale( data_integral / gen_integral_postRW )
         gen_llj_stack.Scale( data_integral / gen_integral_postRW )
         gen.Scale( data_integral / gen_integral_postRW )
 
         main_can = plotfunc.RatioCanvas('Mimic_Plot_%02d_%s'%(i_cat+offset,c),'Mimic plot',600,500)
+        rebin_factor = 12 # 660 / 12 = 55
+        gen_llj_stack.Rebin(rebin_factor)
         plotfunc.AddHistogram(main_can,gen_llj_stack)
+        if 'RESOLVED' in c :
+            gen_yj_stack.SetTitle(gen_yj_stack.GetTitle()+', #Delta^{}R^{ }<^{ }0.2')
+        gen_yj_stack.Rebin(rebin_factor)
         plotfunc.AddHistogram(main_can,gen_yj_stack)
+        if 'RESOLVED' in c :
+            gen_yj_hidr_stack.SetTitle(gen_yj_hidr_stack.GetTitle()+', #Delta^{}R^{ }>^{ }0.2')
+            plotfunc.AddHistogram(main_can,gen_yj_hidr_stack)
+        gen_lly_stack.Rebin(rebin_factor)
         plotfunc.AddHistogram(main_can,gen_lly_stack)
         plotfunc.Stack(main_can)
 
         outfile.cd()
-        gen.Write()
+        gen.Write('Template_c%d'%(i_cat+1))
 
         # Print the final plots, below.
 
         #print Tools.FindRebinFactors(gen)
-        gen.Rebin(rebin)
-        data_blinded.Rebin(rebin)
+        gen.Rebin(rebin_factor)
+        data_blinded.Rebin(rebin_factor)
         data_blinded.SetTitle('Data')
         data_blinded.SetBinErrorOption(ROOT.TH1.kPoisson)
         gen.SetMarkerSize(0); gen.SetLineColor(1); gen.SetLineWidth(2); gen.SetFillColor(1)
@@ -385,23 +439,27 @@ def main(options,args) :
         if p_chi2 != None :
             the_text.append('p(#chi^{2}) = %.2f%%'%(p_chi2*100))
         plotfunc.DrawText(main_can,the_text,.2,0.62,.61,.90,totalentries=4)
-        plotfunc.MakeLegend(main_can,0.70,0.67,0.92,0.90,ncolumns=2,option=['f','f','f','f','p'])
         taxisfunc.SetXaxisRanges(main_can,105,160)
         taxisfunc.AutoFixYaxis(plotfunc.GetTopPad(main_can),forcemin=0.0001)
+
+        if 'RESOLVED' in c :
+            plotfunc.MakeLegend(main_can,0.70,0.46,0.92,0.90,ncolumns=1)
+        else :
+            plotfunc.MakeLegend(main_can,0.70,0.67,0.92,0.90,ncolumns=2)
         tmp.append(main_can)
 
         for can in tmp :
             plotfunc.FormatCanvasAxes(can)
 
         anaplot.UpdateCanvases(tmp)
-        os.system('mkdir -p c%02d_%s'%(i_cat,c))
+        os.system('mkdir -p c%02d_%s'%(i_cat+1,c))
         for can in tmp :
-            can.Print('c%02d_%s/%s.pdf'%(i_cat,c,can.GetName()))
-            can.Print('c%02d_%s/%s.eps'%(i_cat,c,can.GetName()))
+            can.Print('c%02d_%s/%s.pdf'%(i_cat+1,c,can.GetName()))
+            can.Print('c%02d_%s/%s.eps'%(i_cat+1,c,can.GetName()))
+
 
         cans += yj_newcans
         cans += llj_newcans
-
 
         if options.nobatch :
             raw_input('pause')
@@ -415,13 +473,12 @@ if __name__ == '__main__':
     p = OptionParser()
     p.add_option('--nobatch',action='store_true',default=False,dest='nobatch',help='run in batch mode')
     p.add_option('--gen',type='string',default='',dest='gen',help='generator-level file')
-    p.add_option('--yj',type='string',default='',dest='yj',help='yj file')
-    p.add_option('--llj',type='string',default='',dest='llj',help='llj file')
+    p.add_option('--fakes',type='string',default='',dest='fakes',help='fakes file')
     p.add_option('--fractions',type='string',default='Fractions.txt',dest='fractions',help='Text file containing the fractions of lly, ljy, llj')
 
     options,args = p.parse_args()
 
-    if not options.gen or not options.yj or not options.llj or not options.fractions :
+    if not options.gen or not options.fakes or not options.fractions :
         print 'Error - please specify --gen --yj and --llj files, as well as a text file containing the fractions.'
         fractions_ex = '''
 Inclusive Dimuon             0.08 0.040

@@ -27,7 +27,10 @@ doExtraCuts = True
 if doExtraCuts :
     tag = sys.argv[3]
 region = {'lepton_id':REGION.CR_LEPTON_INVERTID,
+          'lepton_id_lodr':REGION.CR_LEPTON_INVERTID,
+          'lepton_id_hidr':REGION.CR_LEPTON_INVERTID,
           'photon_id':REGION.CR_PHOTON_INVERTIDORISO,
+          'sr':REGION.SR,
           }.get(sys.argv[4])
 higgsSF = 1
 theyear = YEAR.y2015161718
@@ -36,9 +39,21 @@ doMesonCuts = True
 # End configuration.
 ##
 
-histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [55,105,160,'m_{ll#gamma} [GeV]']
-if category in [4,5,6] :
-    histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [33,105,160,histformat['HGamEventInfoAuxDyn.m_lly/1000.'][3]] 
+histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [660,105,160,'m_{ll#gamma} [GeV]']
+histformat['HGamElectronsAuxDyn.topoetcone20[1]/HGamElectronsAuxDyn.pt[1]'][0] = 30
+
+# Rebinning, just for the pdfs:
+tmp_rebin = {
+    1: 12,
+    2: 12,
+    3: 12,
+    4: 33,
+    5: 33,
+    6: 33,
+    7: 20,
+    8: 20,
+    9: 20,
+    }.get(category)
 
 fb = HggStarHelpers.GetFbForMCNormalization(theyear)
 
@@ -71,6 +86,11 @@ cuts = [
     # This is assumed to be applied:
     'HGamEventInfoAuxDyn.isPassedObjPreselection',
     ]
+
+if 'lodr' in sys.argv[4] :
+    cuts.append('HGamEventInfoAuxDyn.deltaR_ll <= 0.2')
+if 'hidr' in sys.argv[4] :
+    cuts.append('HGamEventInfoAuxDyn.deltaR_ll > 0.2')
 
 if channel :
     cuts.append('HGamEventInfoAuxDyn.yyStarChannel == %d'%(channel))
@@ -124,9 +144,6 @@ def customnormalize(var,sig_hists=None,bkg_hists=None,data_hist=None) :
     if not bkg_hists or not data_hist :
         return
 
-    if var != 'HGamEventInfoAuxDyn.m_lly/1000.' :
-        return
-
     print 'Assuming that --bkgs is what you want to subtract (irreducible, from FullSim).'
     print 'Now I am going to subtract that from data, and save the result.'
 
@@ -135,11 +152,22 @@ def customnormalize(var,sig_hists=None,bkg_hists=None,data_hist=None) :
     new_hist.SetTitle(new_hist.GetTitle()+' (irr bkg subtracted)')
 
     new_hist.Add(bkg_hists[0],-1)
+    #sig_hists.append(new_hist)
+
+    if var != 'HGamEventInfoAuxDyn.m_lly/1000.' :
+       return
 
     import ROOT
     rname = HggStarHelpers.GetRegionName(region)
+    if 'lodr' in sys.argv[4] :
+        rname += '_lodr'
+    if 'hidr' in sys.argv[4] :
+        rname += '_hidr'
     f = ROOT.TFile('%s_c%d.root'%(rname,category),'RECREATE')
     new_hist.Write('DataCR_%s_c%d'%(rname,category))
     f.Close()
+
+    data_hist.Rebin(tmp_rebin)
+    bkg_hists[0].Rebin(tmp_rebin)
 
     return

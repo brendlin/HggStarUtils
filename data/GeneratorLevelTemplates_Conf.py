@@ -7,11 +7,11 @@ import StudyConfSnippets
 
 ###
 # Change this to check out different channels / years:
-# You have to run this 6 times, and then hadd. Yes, your life is so difficult.
+# You have to run this 6 times, and then hadd. Yes, your life is so difficult. Make a bash function.
 ###
 channel = int(sys.argv[1])
 category = int(sys.argv[2])
-doTruncateWeights = True
+doTruncateWeights = False
 doExtraCuts = True
 if doExtraCuts :
     tag = sys.argv[3]
@@ -20,7 +20,7 @@ if doExtraCuts :
 ##
 
 data = 'data%.root'
-bkgs = 'Sherpa_228_LO_ee_10M_v7_smeared.root'
+bkgs = 'Sherpa_228_LO_ee_10M_v7p2_smeared.root'
 if channel == 1 :
     bkgs = 'Sherpa_228_LO_mumu_10M_v7p2_smeared.root'
 
@@ -42,9 +42,19 @@ def weightscale(tfile) :
 variables = ['HGamEventInfoAuxDyn.m_lly/1000.']
 # variables = [weight]
 
-histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [55,105,160,histformat['HGamEventInfoAuxDyn.m_lly/1000.'][3]]
-if category in [4,5,6] :
-    histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [33,105,160,histformat['HGamEventInfoAuxDyn.m_lly/1000.'][3]] 
+histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [660,105,160,histformat['HGamEventInfoAuxDyn.m_lly/1000.'][3]]
+# Rebinning, just for the pdfs:
+tmp_rebin = {
+    1: 12,
+    2: 12,
+    3: 12,
+    4: 12,
+    5: 12,
+    6: 12,
+    7: 12,
+    8: 12,
+    9: 12,
+    }.get(category)
 
 # Applied only to data:
 datacuts = [
@@ -64,22 +74,7 @@ common = [
     ]
 
 if doExtraCuts :
-    extra = {
-        'mll_50':'HGamEventInfoAuxDyn.m_ll < 50000',
-        'mll_40':'HGamEventInfoAuxDyn.m_ll < 40000',
-        'mll_30':'HGamEventInfoAuxDyn.m_ll < 30000',
-        'mll_20':'HGamEventInfoAuxDyn.m_ll < 20000',
-        'ptll_7':'HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 0.7',
-        'ptll_6':'HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 0.6',
-        'ptll_5':'HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 0.5',
-        'ptll_4':'HGamEventInfoAuxDyn.m_ll/HGamEventInfoAuxDyn.pt_ll < 0.4',
-        }.get(tag)
-
-    if not extra :
-        print 'Error with tag (mll_20 etc)'
-        import sys; sys.exit()
-
-    common.append(extra)
+    StudyConfSnippets.appendExtraCutByTag(common,tag)
 
 StudyConfSnippets.appendMesonCuts(common,channel)
 
@@ -118,6 +113,9 @@ def customnormalize(var,sig_hists=None,bkg_hists=None,data_hist=None) :
     bkg_hists[0].Write('Template_c%d'%(category))
     data_hist.Write('Sidebands_c%d'%(category))
     f.Close()
+
+    bkg_hists[0].Rebin(tmp_rebin)
+    data_hist.Rebin(tmp_rebin)
 
     return
 
