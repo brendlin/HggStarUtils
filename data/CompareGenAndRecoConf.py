@@ -112,11 +112,11 @@ if onlyFar :
 
 fb = GetFbForMCNormalization(theyear)
 
-reco = 'mc16%.700001.Sh_228_ysyLO_ee.p4114.ysy014_pico.root'
-gen   = 'Sherpa_228_LO_ee_10M_v7.root'
+reco = 'mc16%.700001.Sh_228_ysyLO_ee.p4114.ysy015_pico.root'
+gen   = 'Sherpa_228_LO_ee_10M_v7p4.root'
 if channel == 1 :
-    reco = 'mc16%.700002.Sh_228_ysyLO_mumu.p4114.ysy014_pico.root'
-    gen  = 'Sherpa_228_LO_mumu_10M_v7p2.root'
+    reco = 'mc16%.700002.Sh_228_ysyLO_mumu.p4114.ysy015_pico.root'
+    gen  = 'Sherpa_228_LO_mumu_10M_v7p4.root'
 
 if channel != 1 :
     histformat['HGamEventInfoAuxDyn.m_ll/1000.'] = [120,0,30,'m_{ll} [GeV]']
@@ -127,14 +127,14 @@ genweight = 'HGamEventInfoAuxDyn.weight'
 
 if useSmeared :
     gen = gen.replace('.root','_smeared.root')
-    #genweight = 'HGamEventInfoAuxDyn.weight*weight_lep1Eff*weight_lep0Eff*weight_photonEff*weight_mll'
-    genweight = 'HGamEventInfoAuxDyn.weight'
+    genweight = 'HGamEventInfoAuxDyn.weight*weight_lep1Eff*weight_lep0Eff*weight_photonEff*weight_mll'
+    #genweight = 'HGamEventInfoAuxDyn.weight'
     if channel == 2 :
-        #genweight = 'HGamEventInfoAuxDyn.weight*weight_mll*weight_lep0Eff*weight_photonEff'
-        genweight = 'HGamEventInfoAuxDyn.weight'
-    if channel == 3 :
+        genweight = 'HGamEventInfoAuxDyn.weight*weight_mll*weight_lep0Eff*weight_photonEff'
         #genweight = 'HGamEventInfoAuxDyn.weight'
+    if channel == 3 :
         genweight = 'HGamEventInfoAuxDyn.weight*weight_lep0Eff_mer*weight_photonEff_mer'
+        #genweight = 'HGamEventInfoAuxDyn.weight'
 
 variables = [
     'HGamPhotonsAuxDyn.pt[0]/1000.',
@@ -173,6 +173,8 @@ if channel != 1 :
 else :
     for var in range(len(variables)-1,-1,-1) :
         if 'Electron' in variables[var] :
+            variables.pop(variables.index(variables[var]))
+        if 'GSFTrack' in variables[var] :
             variables.pop(variables.index(variables[var]))
 
 if channel != 2 :
@@ -241,6 +243,9 @@ def afterburner(can) :
 
     anaplot.RatioRangeAfterBurner(can)
 
+    if 'HGamEventInfoAuxDyn_m_lly_over_1000' in can.GetName() :
+        anaplot.RatioRangeAfterBurner(can,ymin=0.5,ymax=1.5)
+
     xmin,xmax = 0,0
 
     if 'HGamPhotonsAuxDyn_pt_0_over_1000' in can.GetName() :
@@ -261,7 +266,7 @@ def afterburner(can) :
         f = ROOT.TF1('func_%s'%(can.GetName()),'pol4',xmin,xmax)
     elif 'HGamEventInfoAuxDyn_m_lly_over_1000' in can.GetName() :
         xmin,xmax = 105,160
-        f = ROOT.TF1('func_%s'%(can.GetName()),'pol4',xmin,xmax)
+        f = ROOT.TF1('func_%s'%(can.GetName()),'pol1',xmin,xmax)
     elif 'HGamEventInfoAuxDyn_pt_lly_over_1000' in can.GetName() :
         xmin,xmax = 0,150
         f = ROOT.TF1('func_%s'%(can.GetName()),'pol4',xmin,xmax)

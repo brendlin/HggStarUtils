@@ -20,9 +20,9 @@ if doExtraCuts :
 ##
 
 data = 'data%.root'
-bkgs = 'Sherpa_228_LO_ee_10M_v7p2_smeared.root'
+bkgs = 'Sherpa_228_LO_ee_10M_v7p4_smeared.root'
 if channel == 1 :
-    bkgs = 'Sherpa_228_LO_mumu_10M_v7p2_smeared.root'
+    bkgs = 'Sherpa_228_LO_mumu_10M_v7p4_smeared.root'
 
 treename = 'CollectionTree'
 weight = 'HGamEventInfoAuxDyn.weight'

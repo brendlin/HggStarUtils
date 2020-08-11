@@ -1,4 +1,7 @@
 
+SHERPA_EE_KFACTOR = 1.5
+SHERPA_MUMU_KFACTOR = 1.5
+
 class ChannelEnum :
     CHANNELUNKNOWN=0
     DIMUON=1
@@ -98,6 +101,16 @@ def weightscale_hyystar(tfile,is_h015d=False) :
             fix_xs = 1.8
             print 'Multiplying Sherpa2_mumugamma_pty_15_35 by %2.3f'%(fix_xs)
         
+        # Multiply cross section by this ratio
+        if 'Sh_228_ysyLO_ee' in weighted_histo.GetName() :
+            fix_xs = SHERPA_EE_KFACTOR
+            print 'Multiplying Sh_228_ysyLO_ee by %2.3f'%(fix_xs)
+
+        # Multiply cross section by this ratio
+        if 'Sh_228_ysyLO_mumu' in weighted_histo.GetName() :
+            fix_xs = SHERPA_MUMU_KFACTOR
+            print 'Multiplying Sh_228_ysyLO_mumu by %2.3f'%(fix_xs)
+
         weighted_histo_onlyDalitz = GetOnlyDalitzWeightedCutflowHistogram(t_file)
         tmp_Ntuple_DxAOD = weighted_histo_onlyDalitz.GetBinContent(3) # hopefully unskimmed MC sumw
 
@@ -262,8 +275,8 @@ StandardPlotLabels = {
     '%345963%'                       :'WmH H#rightarrow#gamma*#gamma',
     '%345964%'                       :'WpH H#rightarrow#gamma*#gamma',
     '%345965%'                       :'ZH H#rightarrow#gamma*#gamma',
-    'Sh_228_eey'                     :'Sherpa ee#gamma',
-    'Sh_228_mmy'                     :'Sherpa #mu#mu#gamma',
+    'Sh_228_eey'                     :'Sherpa ee#gamma%s'%(('' if SHERPA_EE_KFACTOR == 1.0 else ' (#times^{}%.1f)'%(SHERPA_EE_KFACTOR) )),
+    'Sh_228_mmy'                     :'Sherpa #mu#mu#gamma%s'%(('' if SHERPA_MUMU_KFACTOR == 1.0 else ' (#times^{}%.1f)'%(SHERPA_MUMU_KFACTOR) )),
     'HiggsToGammaGamma'              :'H#rightarrow#gamma#gamma',
     '%Diphoton%'                     :'SM #gamma#gamma',
     'ZtoEE'                          :'Z#rightarrow^{}ee',
@@ -281,7 +294,7 @@ StandardSampleMerging = {
     'AllHiggs':'%gamstargam%',
     'Sh_228_eey': '%700001%',
     'Sh_228_mmy': '%700002%',
-    'HiggsToGammaGamma':['%343981%',],
+    'HiggsToGammaGamma':['%343981%','%346214%'],
     'ZtoEE':'%361106%',
     'enugamma'              :'%enugamma_pty%'          ,
     #'enugamma_pty_15_35'    :'%enugamma_pty_15_35%'    ,

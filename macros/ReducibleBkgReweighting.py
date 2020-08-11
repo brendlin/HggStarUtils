@@ -49,7 +49,7 @@ functions_ysy = {
     'GGF_RESOLVED_DIELECTRON'  :{'yj_hidr':'[p0] + [p1]*TMath::Exp(-[p2]*%s)'%(xp),'llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj':'[p0] + [p1]*(x-132.5)/(160-105)'},
     'GGF_MERGED_DIELECTRON'    :{'yj':'[p0] + [p1]*(x-132.5)/(160-105) + [p2]*(x-132.5)*(x-132.5)/((160-105)*(160-105))','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'0'},
     'VBF_DIMUON'               :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'0'},
-    'VBF_RESOLVED_DIELECTRON'  :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'[p0] + [p1]*TMath::Exp(-[p2]*%s)'%(xp)},
+    'VBF_RESOLVED_DIELECTRON'  :{'yj':'[p0] + [p1]*TMath::Exp(-[p2]*%s)'%(xp),'llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'[p0] + [p1]*TMath::Exp(-[p2]*%s)'%(xp)},
     'VBF_MERGED_DIELECTRON'    :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'0'},
     'HIPTT_DIMUON'             :{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'0'},
     'HIPTT_RESOLVED_DIELECTRON':{'yj':'[p0] + [p1]*(x-132.5)/(160-105)','llj':'[p0] + [p1]*(x-132.5)/(160-105)','yj_hidr':'[p0] + [p1]*TMath::Exp(-[p2]*%s)'%(xp)},
@@ -162,6 +162,18 @@ def DoRescaleProcedure(gen,bkg,name,ci,c) :
     function.SetLineColor(ROOT.kBlue)
     if (integral(bkg,105,160) >= 20) :
         gen_bkg_ratio.Fit('%d_%s'%(ci,c))
+        if (c == 'HIPTT_RESOLVED_DIELECTRON' and name == 'yj') :
+            for xx in range(10) :
+                print '!!!!!'*20
+            print 'Override! Setting the reweight fit to prevent a positive slope.'
+            print ' -',c,name
+            for xx in range(10) :
+                print '!!!!!'*20
+            # Fit the gen alone ... and fix the thing to the negative.
+            gen_rebin.Fit('%d_%s'%(ci,c))
+            function.FixParameter(0,function.GetParameter(0))
+            function.FixParameter(1,-function.GetParameter(1))
+
     else :
         print 'Not enough events to do a fit! Setting parameters to 1,0.'
         function.SetParameters(1,0)
