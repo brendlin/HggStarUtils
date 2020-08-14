@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import ROOT
 import os
@@ -11,6 +12,10 @@ ROOT.gROOT.SetMacroPath('%s:%s/share'%(ROOT.gROOT.GetMacroPath(),the_path))
 
 ROOT.gROOT.LoadMacro('dscb.C')
 integralTolerance = 1.E-06
+
+# For storing pass-by-reference arguments
+import ctypes
+tmp_double = ctypes.c_double()
 
 ##
 ## The bkg_paramList.txt format that this script is expecting:
@@ -64,24 +69,24 @@ integralTolerance = 1.E-06
 # ...
 
 translation = {
-    'c0':'muons_incl2015-18_mu',
-    'c1':'resolved_incl2015-18_mu',
-    'c2':'merged_incl2015-18_mu',
-    'c3':'muons_vbf2015-18_mu',
-    'c4':'resolved_vbf2015-18_mu',
-    'c5':'merged_vbf2015-18_mu',
-    'c6':'muons_highptt2015-18_mu',
-    'c7':'resolved_highptt2015-18_mu',
-    'c8':'merged_highptt2015-18_mu',
+    'c0':'muons_incl_2015-18',
+    'c1':'resolved_incl_2015-18',
+    'c2':'merged_incl_2015-18',
+    'c3':'muons_vbf_2015-18',
+    'c4':'resolved_vbf_2015-18',
+    'c5':'merged_vbf_2015-18',
+    'c6':'muons_highptt_2015-18',
+    'c7':'resolved_highptt_2015-18',
+    'c8':'merged_highptt_2015-18',
     }
 
 function = {
-    'c0':'ExpPoly3',
-    'c1':'ExpPoly2',
+    'c0':'ExpPoly2',
+    'c1':'Power Law',
     'c2':'ExpPoly2',
-    'c3':'Exponential',
+    'c3':'Power Law',
     'c4':'Exponential',
-    'c5':'Exponential',
+    'c5':'Power Law',
     'c6':'Power Law',
     'c7':'Power Law',
     'c8':'Power Law',
@@ -100,9 +105,8 @@ CategoryNames = {
     }
 
 expr = {
-    'ExpPoly3':'[0]*exp((x - 100)/100*([1] + [2]*(x - 100)/100 + [3]*(x - 100)/100*(x - 100)/100))',
-    'ExpPoly2':'[0]*exp((x - 100)/100*([1] + [2]*(x - 100)/100))',
-    'ExpPoly2':'[0]*exp((x - 100)/100*([1] + [2]*(x - 100)/100))',
+    'ExpPoly3':'[0]*exp( (x-100)/100*( [1] + [2]*(x-100)/100 + [3]*(x-100)/100*(x-100)/100))',
+    'ExpPoly2':'[0]*exp( (x-100)/100*( [1] + [2]*(x-100)/100 ) )',
     'Exponential':'[0]*exp(x*[1])',
     'Power Law':'[0]*TMath::Power((x*1),[1])',
     }
@@ -116,15 +120,15 @@ def findSmallestWindow(f,total,containing=0.9,lim_lo=110,lim_hi=140,epsilon=1.0)
     verbose = False
 
     if verbose : print '%.6f,%.6f'%(lim_lo,lim_hi),
-    current_frac = f.IntegralOneDim(lim_lo,lim_hi,integralTolerance,integralTolerance,ROOT.Double())/total
+    current_frac = f.IntegralOneDim(lim_lo,lim_hi,integralTolerance,integralTolerance,tmp_double)/total
 
     # First check if shifting the current window will result in a larger yield:
-    check = f.IntegralOneDim(lim_lo + epsilon, lim_hi + epsilon,integralTolerance,integralTolerance,ROOT.Double())/total
+    check = f.IntegralOneDim(lim_lo + epsilon, lim_hi + epsilon,integralTolerance,integralTolerance,tmp_double)/total
     if check > current_frac :
         if verbose : print 'shifting window up improves from %.6f to %.6f'%(current_frac,check)
         return findSmallestWindow(f,total,containing,lim_lo+epsilon,lim_hi+epsilon,epsilon)
 
-    check = f.IntegralOneDim(lim_lo - epsilon, lim_hi - epsilon,integralTolerance,integralTolerance,ROOT.Double())/total
+    check = f.IntegralOneDim(lim_lo - epsilon, lim_hi - epsilon,integralTolerance,integralTolerance,tmp_double)/total
     if check > current_frac :
         if verbose : print 'shifting window dn improves from %.6f to %.6f'%(current_frac,check)
         return findSmallestWindow(f,total,containing,lim_lo-epsilon,lim_hi-epsilon,epsilon)
@@ -135,7 +139,7 @@ def findSmallestWindow(f,total,containing=0.9,lim_lo=110,lim_hi=140,epsilon=1.0)
         return lim_lo,lim_hi,current_frac
 
     # Next check if squeezing the limit by epsilon still results in a result >90%
-    check = f.IntegralOneDim(lim_lo + epsilon, lim_hi - epsilon,integralTolerance,integralTolerance,ROOT.Double())/total
+    check = f.IntegralOneDim(lim_lo + epsilon, lim_hi - epsilon,integralTolerance,integralTolerance,tmp_double)/total
     if check < containing :
         if verbose : print 'need to lower epsilon (Integral goes to %.6f), epsilon -> %.6f'%(check,epsilon/2.0)
         return findSmallestWindow(f,total,containing,lim_lo,lim_hi,epsilon/2.0)
@@ -159,6 +163,8 @@ def main(options,args) :
 
     for i in f_bkgList.readlines() :
         i = i.replace('\n','')
+        if (not i) or (i[0] == '#'):
+            continue
         key = i.split()[0]
         for t in translation.keys() :
             key = key.replace(translation[t],t)
@@ -188,7 +194,7 @@ def main(options,args) :
         f_sig.SetParameter(6,parameters['muCBNom_SM_m125000_c%d'%(c)])
 
         f_sig.SetParameter(0,1)
-        integral = f_sig.IntegralOneDim(80,180,integralTolerance,integralTolerance,ROOT.Double())
+        integral = f_sig.IntegralOneDim(80,180,integralTolerance,integralTolerance,tmp_double)
         f_sig.SetParameter(0,parameters['sigYield_SM_m125000_c%d'%(c)]/integral)
 
         lim_lo_68,lim_hi_68,f68 = findSmallestWindow(f_sig,parameters['sigYield_SM_m125000_c%d'%(c)],containing=0.68)
