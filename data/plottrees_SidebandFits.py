@@ -6,7 +6,6 @@ from HggStarHelpers import ChannelEnum,CategoryEnum
 import StudyConfSnippets
 from HggStarHelpers import StandardSampleMerging as mergesamples
 from HggStarHelpers import StandardHistFormat as histformat
-histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [55,105,160,'m_{ll#gamma} [GeV]']
 
 treename = 'CollectionTree'
 
@@ -28,11 +27,15 @@ higgsSF = 100
 theyear = YEAR.y2015161718
 doMesonCuts = True
 doDetailedVariables = False
+mll_range = [110,160]
 ##
 # End configuration.
 ##
 
 fb = GetFbForMCNormalization(theyear)
+
+histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [int(mll_range[1]-mll_range[0]),
+                                                 mll_range[0],mll_range[1],'m_{ll#gamma} [GeV]']
 
 leptonObj = {ChannelEnum.DIMUON: 'Muons',
              ChannelEnum.RESOLVED_DIELECTRON:'Electrons',
@@ -63,7 +66,7 @@ if category :
 
 if region in [REGION.CR1, REGION.CR2, REGION.SR, REGION.SR_VBF] :
     cuts += [
-        '(HGamEventInfoAuxDyn.m_lly > 105000 && HGamEventInfoAuxDyn.m_lly < 160000)',
+        '(HGamEventInfoAuxDyn.m_lly > %d000 && HGamEventInfoAuxDyn.m_lly < %d000)'%(mll_range[0],mll_range[1]),
         'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly > 0.3', # new cuts
         'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly > 0.3', # new cuts
         ]
@@ -105,58 +108,16 @@ def afterburner(can) :
     ratioplot.GetYaxis().SetTitle('pull')
     ratioplot.GetXaxis().SetTitle('m_{ll#gamma} [GeV]')
 
-    bkg_parameters_block = '''
-nbkg_muons_incl2015-18_mu      = 11878.2     +/-  120.399    (limited)
-a1_muons_incl2015-18_mu      = -4.53852     +/-  0.179633    (limited)
-a2_muons_incl2015-18_mu      = 3.30439     +/-  0.165049    (limited)
-a3_muons_incl2015-18_mu      = -1.47459     +/-  0.508958    (limited)
-
-nbkg_resolved_incl2015-18_mu      = 5334.09     +/-  83.7904    (limited)
-a1_resolved_incl2015-18_mu      = -3.60607     +/-  0.455044    (limited)
-a2_resolved_incl2015-18_mu      = 0.00628578     +/-  0.762606    (limited)
-
-nbkg_merged_incl2015-18_mu      = 6180.67     +/-  90.8015    (limited)
-a1_merged_incl2015-18_mu      = -1.79265     +/-  0.393113    (limited)
-a2_merged_incl2015-18_mu      = -0.500681     +/-  0.648747    (limited)
-
-nbkg_muons_vbf2015-18_mu      = 38.9094     +/-  6.96168    (limited)
-slope_muons_vbf2015-18_mu      = -0.0243778     +/-  0.0107391    (limited)
-
-nbkg_resolved_vbf2015-18_mu      = 12.5782     +/-  3.9915    (limited)
-slope_resolved_vbf2015-18_mu      = -0.0286611     +/-  0.0190401    (limited)
-
-nbkg_merged_vbf2015-18_mu      = 23.7751     +/-  5.48928    (limited)
-slope_merged_vbf2015-18_mu      = -0.0459791     +/-  0.0148474    (limited)
-
-nbkg_muons_highptt2015-18_mu      = 237.156     +/-  17.191    (limited)
-lambda_muons_highptt2015-18_mu      = -1.72409     +/-  0.546747    (limited)
-
-nbkg_resolved_highptt2015-18_mu      = 91.8353     +/-  10.7243    (limited)
-lambda_resolved_highptt2015-18_mu      = -1.61933     +/-  0.931285    (limited)
-
-nbkg_merged_highptt2015-18_mu      = 185.889     +/-  15.1875    (limited)
-lambda_merged_highptt2015-18_mu      = -0.67296     +/-  0.618264    (limited)
-'''
-
-    tmp_name = {
-        1 : 'muons_incl2015-18_mu',
-        2 : 'resolved_incl2015-18_mu',
-        3 : 'merged_incl2015-18_mu',
-        4 : 'muons_vbf2015-18_mu',
-        5 : 'resolved_vbf2015-18_mu',
-        6 : 'merged_vbf2015-18_mu',
-        7 : 'muons_highptt2015-18_mu',
-        8 : 'resolved_highptt2015-18_mu',
-        9 : 'merged_highptt2015-18_mu',
-        }.get(category)
+    print 'Expecting to open a file bkgParameters.txt'
+    bkg_parameters = open ('bkgParameters.txt')
 
     function = {
-        1:'ExpPoly3',
-        2:'ExpPoly2',
+        1:'ExpPoly2',
+        2:'Power Law',
         3:'ExpPoly2',
-        4:'Exponential',
+        4:'Power Law',
         5:'Exponential',
-        6:'Exponential',
+        6:'Power Law',
         7:'Power Law',
         8:'Power Law',
         9:'Power Law',
@@ -170,23 +131,24 @@ lambda_merged_highptt2015-18_mu      = -0.67296     +/-  0.618264    (limited)
         'Power Law':'[0]*TMath::Power((x*1),[1])',
         }.get(function)
 
-    f_bkg = ROOT.TF1(function,expr,105,160)
+    f_bkg = ROOT.TF1(function,expr,mll_range[0],mll_range[1])
     f_bkg.SetTitle(function)
 
     translation = {
-        'c1':'muons_incl2015-18_mu',
-        'c2':'resolved_incl2015-18_mu',
-        'c3':'merged_incl2015-18_mu',
-        'c4':'muons_vbf2015-18_mu',
-        'c5':'resolved_vbf2015-18_mu',
-        'c6':'merged_vbf2015-18_mu',
-        'c7':'muons_highptt2015-18_mu',
-        'c8':'resolved_highptt2015-18_mu',
-        'c9':'merged_highptt2015-18_mu',
+        'c1':'muons_incl_2015-18',
+        'c2':'resolved_incl_2015-18',
+        'c3':'merged_incl_2015-18',
+        'c4':'muons_vbf_2015-18',
+        'c5':'resolved_vbf_2015-18',
+        'c6':'merged_vbf_2015-18',
+        'c7':'muons_highptt_2015-18',
+        'c8':'resolved_highptt_2015-18',
+        'c9':'merged_highptt_2015-18',
         }
 
     parameters = dict()
-    for i in bkg_parameters_block.split('\n') :
+    for i in bkg_parameters.readlines() :
+        i = i.replace('\n','')
         if not i : continue
         key = i.split()[0]
         for t in translation.keys() :
@@ -211,7 +173,7 @@ lambda_merged_highptt2015-18_mu      = -0.67296     +/-  0.618264    (limited)
         f_bkg.SetParameter(1,par)
 
     f_bkg.SetParameter(0,1)
-    integral = f_bkg.Integral(105,160)
+    integral = f_bkg.Integral(mll_range[0],mll_range[1])
     f_bkg.SetParameter(0,parameters['nbkg_%s'%(cstr)]/float(integral))
     f_bkg.SetLineColor(ROOT.kBlue)
     plotfunc.AddHistogram(can,f_bkg,'l')
@@ -236,7 +198,7 @@ lambda_merged_highptt2015-18_mu      = -0.67296     +/-  0.618264    (limited)
 
     # Set ratio range; add dotted line at 1
     if plotfunc.GetBotPad(can) :
-        taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(can),-4,4)
+        taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(can),-3.999,3.999)
         xmin,xmax = None,None
         for i in plotfunc.GetBotPad(can).GetListOfPrimitives() :
             if issubclass(type(i),ROOT.TH1) :

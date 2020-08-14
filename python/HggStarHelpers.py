@@ -379,6 +379,7 @@ StandardHistFormat = {
     'HGamElectronsAuxDyn.f3'         :[100,    0,0.03,'f_{3}'           ],
     'HGamElectronsAuxDyn.weta2'      :[100,0.005,0.02,'w_{#eta2}'       ],
     'HGamElectronsAuxDyn.wtots1'     :[100,    0,   6,'w_{s,tot}'       ],
+    'HGamElectronsAuxDyn.vtxM/1000.' :[100,    0,   3,'Merged electron vertex mass [GeV]'],
     # Merged ID variables
     'HGamElectronsAuxDyn.delta_z0_tracks'                 :[100,-10, 10,'#Delta^{}z_{0}^{PV}'             ],
     'HGamElectronsAuxDyn.delta_z0sinTheta_tracks'         :[100,-10, 10,'#Delta^{}z_{0}^{PV}sin#theta'    ],
