@@ -40,26 +40,26 @@ labels = {
     }
 
 cuts = [
-    'HGamEventInfoAuxDyn.cutFlow > 24',
-    'HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000>25',
+        'HGamEventInfoAuxDyn.cutFlow > 24',
+    #'HGamEventInfoAuxDyn.isPassedEventSelection',
+            'HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000>25',
     'HGamAntiKt4EMPFlowJetsAuxDyn.pt[1]/1000>25',
-    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>0.3',
+          'HGamEventInfoAuxDyn.Deta_j_j>2.7', 
+    'HGamEventInfoAuxDyn.m_jj/1000>500', 
+    'min(HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000. + 999*(abs(HGamAntiKt4EMPFlowJetsAuxDyn.eta[0]) < 2.5),HGamAntiKt4EMPFlowJetsAuxDyn.pt[1]/1000. + 999*(abs(HGamAntiKt4EMPFlowJetsAuxDyn.eta[1]) < 2.5))>30',
+        'abs(HGamEventInfoAuxDyn.Zepp_lly)<2.0',
+    'HGamEventInfoAuxDyn.DRmin_y_leps_2jets>1.5',
+        'HGamEventInfoAuxDyn.Dphi_lly_jj>2.8',
+            'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>0.3',
     'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>0.3',
-   
-    'HGamEventInfoAuxDyn.m_jj/1000>400',
-    'HGamEventInfoAuxDyn.Deta_j_j>2.5',
-    'abs(HGamEventInfoAuxDyn.Zepp_lly)<5',
-    'HGamEventInfoAuxDyn.pTt_lly/1000>20',
-    'HGamEventInfoAuxDyn.DRmin_y_leps_2jets>1',
-    'HGamEventInfoAuxDyn.Dphi_lly_jj>2.5',
     ]
 
 variables = [
-    'abs(HGamEventInfoAuxDyn.Zepp_lly)<',
-    'HGamEventInfoAuxDyn.DRmin_y_leps_2jets>',
-    'HGamEventInfoAuxDyn.Dphi_lly_jj>',
+    #'abs(HGamEventInfoAuxDyn.Zepp_lly)<',
+    #'HGamEventInfoAuxDyn.DRmin_y_leps_2jets>',
+    #'HGamEventInfoAuxDyn.Dphi_lly_jj>',
     #'HGamEventInfoAuxDyn.pT_llyjj/1000<',
-    'HGamEventInfoAuxDyn.pTt_lly/1000>',
+    #'HGamEventInfoAuxDyn.pTt_lly/1000>',
 
 
     #'HGamPhotonsAuxDyn.pt[0]/1000>',
@@ -70,15 +70,20 @@ variables = [
     #'HGamMuonsAuxDyn.pt[1]/1000>',
     #'HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000>',
     #'HGamAntiKt4EMPFlowJetsAuxDyn.pt[1]/1000>',
-    #'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>',
-    #'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>',
-    'HGamEventInfoAuxDyn.m_jj/1000>',
-    'HGamEventInfoAuxDyn.Deta_j_j>',
+    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>',
+    'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>',
+    'HGamEventInfoAuxDyn.Deta_j_j>', 
+    'HGamEventInfoAuxDyn.m_jj/1000>', 
+    'min(HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000. + 999*(abs(HGamAntiKt4EMPFlowJetsAuxDyn.eta[0]) < 2.5),HGamAntiKt4EMPFlowJetsAuxDyn.pt[1]/1000. + 999*(abs(HGamAntiKt4EMPFlowJetsAuxDyn.eta[1]) < 2.5))>',
+        'abs(HGamEventInfoAuxDyn.Zepp_lly)<',
+    'HGamEventInfoAuxDyn.DRmin_y_leps_2jets>',
+        'HGamEventInfoAuxDyn.Dphi_lly_jj>',
     ]
 
 histformat = {
-    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',10,0,0.5,'p^{ll}_{T}/m_{ll#gamma}'],
-    'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',10,0.0,0.5,'p^{#gamma}_{T}/m_{ll#gamma}'],
+        'min(HGamAntiKt4EMPFlowJetsAuxDyn.pt[0]/1000. + 999*(abs(HGamAntiKt4EMPFlowJetsAuxDyn.eta[0]) < 2.5),HGamAntiKt4EMPFlowJetsAuxDyn.pt[1]/1000. + 999*(abs(HGamAntiKt4EMPFlowJetsAuxDyn.eta[1]) < 2.5))': [55,105,160,'m_{ll#gamma} [GeV]',25,26,76,'p^{fwjet}_{T}'],
+    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',32,0,0.8,'p^{ll}_{T}/m_{ll#gamma}'],
+    'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',32,0.0,0.8,'p^{#gamma}_{T}/m_{ll#gamma}'],
     'HGamPhotonsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',20,20,40,'p^{#gamma}_{T} [GeV]'],
     'HGamMuonsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,11,71,'p^{#mu0}_{T} [GeV]'],
     'HGamMuonsAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',34,3,20,'p^{#mu1}_{T} [GeV]'],
@@ -88,13 +93,13 @@ histformat = {
     'HGamElectronsAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,4.5,34.5,'p^{e1}_{T} [GeV]'],
     'HGamGSFTrackParticlesAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',40,20,60,'p^{trk0}_{T} [GeV]'],
     
-    'HGamEventInfoAuxDyn.DRmin_y_leps_2jets': [55,105,160,'m_{ll#gamma} [GeV]',55,0.4,1.5,'min(#Delta^{}R_{j-#gamma/leps})'],
-    'HGamEventInfoAuxDyn.Dphi_lly_jj': [55,105,160,'m_{ll#gamma} [GeV]',29,0,2.9,'#Delta^{}#phi_{ll#gamma,jj}'],
+    'HGamEventInfoAuxDyn.DRmin_y_leps_2jets': [55,105,160,'m_{ll#gamma} [GeV]',30,0.5,3.5,'min(#Delta^{}R_{j-#gamma/leps})'],
+    'HGamEventInfoAuxDyn.Dphi_lly_jj': [55,105,160,'m_{ll#gamma} [GeV]',30,0,3,'#Delta^{}#phi_{ll#gamma,jj}'],
     'HGamEventInfoAuxDyn.pTt_lly/1000': [55,105,160,'m_{ll#gamma} [GeV]',50,0,50,'p^{ll#gamma}_{Tt} [GeV]'],
-    'HGamEventInfoAuxDyn.m_jj/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,200,800,'m_{jj} [GeV]'],
+    'HGamEventInfoAuxDyn.m_jj/1000': [55,105,160,'m_{ll#gamma} [GeV]',30,200,800,'m_{jj} [GeV]'],
     'HGamEventInfoAuxDyn.pT_llyjj/1000': [55,105,160,'m_{ll#gamma} [GeV]',50,0,100,'p^{lljj#gamma}_{T} [GeV]'],
-    'HGamEventInfoAuxDyn.Deta_j_j': [55,105,160,'m_{ll#gamma} [GeV]',25,1,3.5,'#Delta^{}#eta_{jj}'],
-    'abs(HGamEventInfoAuxDyn.Zepp_lly)': [55,105,160,'m_{ll#gamma} [GeV]',50,2,7,'|#eta^{ll#gamma}_{Zepp}|'],
+    'HGamEventInfoAuxDyn.Deta_j_j': [55,105,160,'m_{ll#gamma} [GeV]',25,0.9,5.9,'#Delta^{}#eta_{jj}'],
+    'abs(HGamEventInfoAuxDyn.Zepp_lly)': [55,105,160,'m_{ll#gamma} [GeV]',50,0,5,'|#eta^{ll#gamma}_{Zepp}|'],
     }
 
 weight = 'HGamEventInfoAuxDyn.crossSectionBRfilterEff*HGamEventInfoAuxDyn.weight'

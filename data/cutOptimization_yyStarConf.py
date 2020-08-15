@@ -40,10 +40,10 @@ labels = {
     }
 
 cuts = [
-     #'HGamEventInfoAuxDyn.cutFlow > 23',
+     'HGamEventInfoAuxDyn.cutFlow > 24',
      #'HGamEventInfoAuxDyn.yyStarChannel == 1',
-     'HGamEventInfoAuxDyn.isPassedEventSelection == 1',
-     'HGamPhotonsAuxDyn.pt[0]/1000>20',
+     #'HGamEventInfoAuxDyn.isPassedEventSelection == 1',
+     #'HGamPhotonsAuxDyn.pt[0]/1000>20',
      #'HGamPhotonsAuxDyn.pt[0]/1000>20',
      #'HGamEventInfoAuxDyn.pt_ll/1000>20',     
      #'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>0',
@@ -67,25 +67,25 @@ cuts = [
     #'HGamEventInfoAuxDyn.m_ll/1000<2.5 || HGamEventInfoAuxDyn.m_ll/1000>3.5', #electron J/Psi peak
     #'HGamElectronsAuxDyn.pt[0]/1000>13',
     
-    'HGamEventInfoAuxDyn.m_ll/1000<2.9 || HGamEventInfoAuxDyn.m_ll/1000>3.3', #muon J/Psi peak
-    'HGamEventInfoAuxDyn.m_ll/1000<9.1 || HGamEventInfoAuxDyn.m_ll/1000>10.6', #muon Y peak(s)
-    'HGamMuonsAuxDyn.pt[0]/1000>11',    
+    #'HGamEventInfoAuxDyn.m_ll/1000<2.9 || HGamEventInfoAuxDyn.m_ll/1000>3.3', #muon J/Psi peak
+    #'HGamEventInfoAuxDyn.m_ll/1000<9.1 || HGamEventInfoAuxDyn.m_ll/1000>10.6', #muon Y peak(s)
+    #'HGamMuonsAuxDyn.pt[0]/1000>11',    
     
     
-    'HGamEventInfoAuxDyn.Deta_j_j<2.5', #anti-VBF cut, if no jets in event - then value is '-99', still correctly treated
-    'HGamEventInfoAuxDyn.m_jj/1000<400', #anti-VBF cut, if no jets in event - then value is '-99', still correctly treated
+    #'HGamEventInfoAuxDyn.Deta_j_j<2.5', #anti-VBF cut, if no jets in event - then value is '-99', still correctly treated
+    #'HGamEventInfoAuxDyn.m_jj/1000<400', #anti-VBF cut, if no jets in event - then value is '-99', still correctly treated
     
     
     
-    #'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>0.4',
-    ##'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>0.4',
+    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>0.3',
+    'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>0.3',
     #'HGamGSFTrackParticlesAuxDyn.pt[0]/1000>27',
     
     ]
 
 variables = [
       'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly>',
-      #'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>',
+      'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly>',
       ##'HGamPhotonsAuxDyn.pt[0]/1000>',
       #'HGamElectronsAuxDyn.pt[0]/1000>',
       #'HGamElectronsAuxDyn.pt[1]/1000>',
@@ -121,8 +121,8 @@ variables = [
     ]
 
 histformat = {
-    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',50,0,0.5,'p^{ll}_{T}/m_{ll#gamma}'],
-    'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',50,0,0.5,'p^{#gamma}_{T}/m_{ll#gamma}'],
+    'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',32,0,0.8,'p^{ll}_{T}/m_{ll#gamma}'],
+    'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly': [55,105,160,'m_{ll#gamma} [GeV]',32,0,0.8,'p^{#gamma}_{T}/m_{ll#gamma}'],
     'HGamPhotonsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,10,70,'p^{#gamma}_{T} [GeV]'],
     'HGamMuonsAuxDyn.pt[0]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,11,71,'p^{#mu0}_{T} [GeV]'],
     'HGamMuonsAuxDyn.pt[1]/1000': [55,105,160,'m_{ll#gamma} [GeV]',60,3,63,'p^{#mu1}_{T} [GeV]'],

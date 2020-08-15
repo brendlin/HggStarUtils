@@ -166,7 +166,7 @@ class OptimizationSequence:
     def GetDeltaSignificance(self):
         return self.GetCurrentSignificance() - self.previous_max_sgnf
     
-    def GetSignificances(self, iteration = 0, smooth = True, punish = True):
+    def GetSignificances(self, iteration = 0):
         significances = []
         for i in range(len(self.sig_yields[iteration])):
             s = self.sig_yields[iteration][i]
@@ -174,10 +174,10 @@ class OptimizationSequence:
                 #s = s*ROOT.TMath.Erf(s/2.16) #2.16 is a magic constant - ask Kurt what it means
             b = self.bkg_yields[iteration][i]
             significance = self.CalcSignificance(s,b)
-            if punish: #punish low signal in significance calculation
+            if options.punish: #punish low signal in significance calculation
                 significance = significance*ROOT.TMath.Erf(s/2.16) #2.16 is a magic constant - ask Kurt what it means
             significances.append(significance)
-        if not smooth:
+        if not options.smooth:
             return significances
         #smooth with TGraphSmooth
         x, y = array( 'd' ), array( 'd' )
@@ -191,8 +191,8 @@ class OptimizationSequence:
             significances[i] = smooth_graph.GetY()[i]
         return significances
     
-    def GetCurrentSignificances(self, smooth = True, punish = True):
-        return self.GetSignificances(self.iteration,smooth, punish)
+    def GetCurrentSignificances(self):
+        return self.GetSignificances(self.iteration)
     
     def GetCurrentSignals(self):
         return self.sig_yields[self.iteration]
@@ -317,9 +317,34 @@ class OptimizationSequence:
             sys.exit(1)
         return cur_cuts
     
+    def FindCurrentCutPoint(self,npoints,variable,append_cut_point=False):
+        scan_point_min = variable.scan_min
+        scan_point_max = variable.scan_max
+        increment = (scan_point_max-scan_point_min)/float(npoints)
+    
+        cut_point = 0
+        if variable.sign == '<':
+            cut_point = npoints-1 #to integrate over whole distribution by default
+    
+        for j in range(1,npoints+1):
+            for i,cut in enumerate(self.GetCurrentCuts()):
+                if variable.name in cut:
+                    cut_sign = '>'
+                    for symbol in cut[::-1]: #find first '<' or '>' from the right - for fancier cuts containing several of these...
+                        if symbol == '<' or symbol == '>':
+                            cut_sign = symbol
+                            break
+                    self.SetCurrentCutSign(cut_sign)
+
+                    if (cut_sign == '>' and abs(float(cut.split('>')[-1].rstrip(")")) - (scan_point_min + (j-1)*increment))<1e-5) or (cut_sign == '<' and abs(float(cut.split('<')[-1].rstrip(")")) - (scan_point_min + j*increment))<1e-5): #we already have a cut on this variable which maximized significance, need to save it for significance calculation
+                        cut_point = j-1
+        self.SetCurrentCutPoint(cut_point)
+        if append_cut_point:
+            self.cut_points.append(cut_point)
+        return cut_point
+    
     def SetCurrentCutPoint(self, point):
         self.cur_cut_point = point
-        self.cut_points.append(point)
         
     def SetCurrentCutSign(self,sign):
         self.cur_cut_sign = sign
@@ -483,14 +508,27 @@ def PlotIteration(optimization):
     bkg_histo_var.SetTitle("data")
     plotfunc.AddHistogram(c,bkg_histo_var)
     plotfunc.AddHistogram(c,sig_histo_var)
-    sgnf_graph = ROOT.TGraph(len(significances),array('d',variable.GetPoints(len(significances))),array('d',significances))
+    
+    npoints = len(significances)
+    sgnf_graph = ROOT.TGraph(npoints,array('d',variable.GetPoints(npoints)),array('d',significances))
     sgnf_graph.SetTitle("sgnf")
     sgnf_graph.SetName(str(iteration))
-    npoints = len(significances)
     sgnf_graph.GetXaxis().Set(npoints+1,variable.GetPoints(npoints)[0],variable.GetPoints(npoints)[-1]+(variable.GetPoints(npoints)[1]-variable.GetPoints(npoints)[0]))
 
     plotfunc.AddHistogram(plotfunc.GetBotPad(c),sgnf_graph)
-    plotfunc.SetAxisLabels(c,variable.root_name,"arbitrary units","S/#sqrt{B}")
+    
+    if options.freeze_cuts: #superimposes cut point on the plot
+        cut_point = optimization.FindCurrentCutPoint(npoints,variable)
+        sgnf_point_sgnf = [significances[cut_point]]
+        sgnf_point_cut = [variable.GetPoints(npoints)[cut_point]]
+        sgnf_point = ROOT.TGraph(1,array('d',sgnf_point_cut),array('d',sgnf_point_sgnf))
+        sgnf_point.SetTitle("sgnf pnt")
+        sgnf_point.SetName(str(iteration)+"pnt")
+        sgnf_point.GetXaxis().Set(npoints+1,variable.GetPoints(npoints)[0],variable.GetPoints(npoints)[-1]+(variable.GetPoints(npoints)[1]-variable.GetPoints(npoints)[0]))
+        plotfunc.AddHistogram(plotfunc.GetBotPad(c),sgnf_point)
+        plotfunc.SetColors(plotfunc.GetBotPad(c),[1,3])
+    
+    plotfunc.SetAxisLabels(c,variable.root_name,"arbitrary units","proxy significance")
     plotfunc.FullFormatCanvasDefault(c,optimization.options.fb)
     plotfunc.MakeLegend(c,.65,.73,.8,.93)
     if not os.path.isdir(os.getcwd() + "/plots"):
@@ -641,20 +679,7 @@ def GetNEvents(signal,options,year,channel,variable,optimization) :
     scan_point_max = variable.scan_max
     increment = (scan_point_max-scan_point_min)/float(npoints)
     
-    cut_point = 0
-    if variable.sign == '<':
-        cut_point = npoints-1 #to integrate over whole distribution by default
-    
     for j in range(1,npoints+1):
-        for i,cut in enumerate(optimization.GetCurrentCuts()):
-            if variable.name in cut:
-                cut_sign = '>'
-                for symbol in cut[::-1]: #find first '<' or '>' from the right - for fancier cuts containing several of these...
-                    if symbol == '<' or symbol == '>':
-                        cut_sign = symbol
-                        break
-                if (cut_sign == '>' and float(cut.split('>')[-1].rstrip(")")) == scan_point_min + (j-1)*increment) or (cut_sign == '<' and float(cut.split('<')[-1].rstrip(")")) == scan_point_min + j*increment): #we already have a cut on this variable which maximized significance, need to save it for significance calculation
-                    cut_point = j-1
         Yaxis = histo.GetYaxis()
         histo_title = year + "_" + channels[channel] + str(optimization.GetIteration()) + "_" +str(signal) + "_" +str(j) + "_" + variable.name + "_" + str(Yaxis.GetBinLowEdge(j))
         if variable.sign == '>':
@@ -679,9 +704,7 @@ def GetNEvents(signal,options,year,channel,variable,optimization) :
         histo_variable.SetDirectory(0)
     optimization.AddYields(signal,variable,scan_yields,uncertainties,histo)
     if signal: #crude way of doing this only once per iteration
-        optimization.SetCurrentCutPoint(cut_point)
-        if '<' in cut:
-            optimization.SetCurrentCutSign('<')
+        optimization.FindCurrentCutPoint(npoints,variable,True)
     histo.SetDirectory(0)
             
 def AdjustCuts(optimization,variable):
@@ -837,7 +860,7 @@ def main(options,args) :
                 print "***********************************************************"
                 print "***********************************************************"
                 print "***********************************************************"
-                #PlotIteration(optimization)
+                PlotIteration(optimization)
                 fscan = open("full_optimization_scan_" + year + "_" + channels[channel] + ".txt","a+")
                 scan = []
                 scan.append(variable.name)
@@ -892,6 +915,8 @@ if __name__ == '__main__':
     p.p.add_option("--signif-mode", default='low-stat', help="\"low-stat\", \"default\"")
     p.p.add_option("--cr-scale", default=1, help="scale factor for the CR")
     p.p.add_option("--freeze-cuts", default=0, help="do only significance scans with cuts frozen: 0 (default) or 1")
+    p.p.add_option("--smooth", default=1, help="smooth significance profile (reduces jitter with low stats): 0 or 1 (default)")
+    p.p.add_option("--punish", default=1, help="avoid over-constraining in low stats regime by punishing for too low signal: 0 or 1 (default)")
     
     options,args = p.parse_args()
     
@@ -902,6 +927,24 @@ if __name__ == '__main__':
             sys.exit()
     except:
         print "ERROR: could not parse freeze-cuts option \"" + options.freeze_cuts+"\" (expected 0 or 1). Exiting"
+        sys.exit()
+        
+    try:
+        options.smooth = int(options.smooth)
+        if  options.smooth != 1 and  options.smooth != 0:
+            print "ERROR: could not parse freeze-cuts option \"" + options.smooth+"\" (expected 0 or 1). Exiting"
+            sys.exit()
+    except:
+        print "ERROR: could not parse freeze-cuts option \"" + options.smooth+"\" (expected 0 or 1). Exiting"
+        sys.exit()
+        
+    try:
+        options.punish = int(options.punish)
+        if  options.punish != 1 and  options.punish != 0:
+            print "ERROR: could not parse freeze-cuts option \"" + options.punish+"\" (expected 0 or 1). Exiting"
+            sys.exit()
+    except:
+        print "ERROR: could not parse freeze-cuts option \"" + options.punish+"\" (expected 0 or 1). Exiting"
         sys.exit()
     
     argument_valid = False
