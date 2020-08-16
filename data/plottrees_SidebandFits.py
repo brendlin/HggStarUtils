@@ -1,11 +1,15 @@
 
 # Usage: plottrees.py 1 1 --config plottrees_SidebandFits.py --data data%.root --ratio --poisson --batch --outdir c01_sbFit
 
+import HggStarHelpers
 from HggStarHelpers import YEAR,GetFbForMCNormalization
 from HggStarHelpers import ChannelEnum,CategoryEnum
 import StudyConfSnippets
 from HggStarHelpers import StandardSampleMerging as mergesamples
 from HggStarHelpers import StandardHistFormat as histformat
+
+import ROOT
+ROOT.gROOT.LoadMacro('dscb.C')
 
 treename = 'CollectionTree'
 
@@ -28,6 +32,7 @@ theyear = YEAR.y2015161718
 doMesonCuts = True
 doDetailedVariables = False
 mll_range = [110,160]
+doAddSignal = True
 ##
 # End configuration.
 ##
@@ -42,8 +47,8 @@ leptonObj = {ChannelEnum.DIMUON: 'Muons',
              ChannelEnum.MERGED_DIELECTRON:  'Electrons',
              }.get(channel,None)
 
-from HggStarHelpers import GetPlotText
-plottext = GetPlotText(channel,category)
+plottext = HggStarHelpers.GetPlotText(channel,category)
+plottext[0] = plottext[0].replace('channel','')
 if region == REGION.SR_VBF :
     plottext = plottext.replace('channel','VBF category')
 
@@ -132,7 +137,7 @@ def afterburner(can) :
         }.get(function)
 
     f_bkg = ROOT.TF1(function,expr,mll_range[0],mll_range[1])
-    f_bkg.SetTitle(function)
+    f_bkg.SetTitle('Bkg (%s)'%function)
 
     translation = {
         'c1':'muons_incl_2015-18',
@@ -149,7 +154,8 @@ def afterburner(can) :
     parameters = dict()
     for i in bkg_parameters.readlines() :
         i = i.replace('\n','')
-        if not i : continue
+        if not i or i[0] == '#' :
+            continue
         key = i.split()[0]
         for t in translation.keys() :
             key = key.replace(translation[t],t)
@@ -176,9 +182,8 @@ def afterburner(can) :
     integral = f_bkg.Integral(mll_range[0],mll_range[1])
     f_bkg.SetParameter(0,parameters['nbkg_%s'%(cstr)]/float(integral))
     f_bkg.SetLineColor(ROOT.kBlue)
+    f_bkg.SetLineWidth(2)
     plotfunc.AddHistogram(can,f_bkg,'l')
-    ranges = plotfunc.AutoFixYaxis(plotfunc.GetTopPad(can))
-    plotfunc.SetYaxisRanges(plotfunc.GetTopPad(can),0.001,ranges[1])
 
     # Pull!
     for i in range(ratioplot.GetNbinsX()+2) :
@@ -196,6 +201,61 @@ def afterburner(can) :
 
     plotfunc.AddHistogram(can.GetPrimitive('pad_bot'),ratioplot,drawopt='pE1')
 
+    #
+    # Add signal and Hyy:
+    print 'Expecting to open a file resonance_paramList.txt'
+    f_paramList = open('resonance_paramList.txt')
+
+    for i in f_paramList.readlines() :
+        i = i.replace('\n','')
+        parameters[i.split()[0]] = float(i.split()[1])
+
+    if doAddSignal :
+        f_sig = ROOT.TF1('H#rightarrow#gamma*#gamma parameterization',ROOT.dscb,80,180,7)
+
+        # The numbering of resonance_paramList is offset by 1.
+        c = category - 1
+        f_sig.SetParameter(1,parameters['sigmaCBNom_SM_m125000_c%d'%(c)])
+        f_sig.SetParameter(2,parameters['alphaCBLo_SM_m125000_c%d'%(c)])
+        f_sig.SetParameter(3,parameters['alphaCBHi_SM_m125000_c%d'%(c)])
+        f_sig.SetParameter(4,parameters['nCBLo_SM_c%d'%(c)])
+        f_sig.SetParameter(5,parameters['nCBHi_SM_c%d'%(c)])
+        f_sig.SetParameter(6,parameters['muCBNom_SM_m125000_c%d'%(c)])
+
+        # Normalize correctly
+        f_sig.SetParameter(0,1)
+        integral = f_sig.Integral(80,180)
+        integral_sig = parameters['sigYield_SM_m125000_c%d'%(c)]
+        f_sig.SetParameter(0,integral_sig*hist.GetBinWidth(1)/float(integral)) # bin width!!
+
+        h_hyy = None
+        nhyy = parameters.get('hyy_%s'%(cstr),0)
+        if nhyy :
+            h_hyy = ROOT.TH1F('h_hyy','Bkg^{ }+^{ }H#rightarrow#gamma#gamma',40,120,130)
+            sig_int = f_sig.Integral(105,160)
+            for i in range(h_hyy.GetNbinsX()) :
+                bcenter = h_hyy.GetBinCenter(i+1)
+                bcontent = f_sig.Eval(bcenter)*nhyy/float(sig_int) + f_bkg.Eval(bcenter)
+                h_hyy.SetBinContent(i+1,bcontent)
+
+            h_hyy.SetLineColor(ROOT.kGreen+1)
+            h_hyy.SetLineStyle(7)
+            h_hyy.SetLineWidth(2)
+            plotfunc.AddHistogram(can,h_hyy,'l')
+
+        integral_hyy = 1
+        h_sig = ROOT.TH1F('h_sig','Sig^{ }+^{ }Bkg',40,120,130)
+        if nhyy :
+            h_sig.SetTitle('Sig^{ }+^{ }Bkg^{ }+^{ }H#rightarrow#gamma#gamma')
+        for i in range(h_sig.GetNbinsX()) :
+            bcenter = h_sig.GetBinCenter(i+1)
+            h_sig.SetBinContent(i+1,f_sig.Eval(bcenter) + f_bkg.Eval(bcenter))
+        h_sig.SetLineColor(ROOT.kRed)
+        plotfunc.AddHistogram(can,h_sig,'l')
+
+    ranges = plotfunc.AutoFixYaxis(plotfunc.GetTopPad(can))
+    plotfunc.SetYaxisRanges(plotfunc.GetTopPad(can),0.001,ranges[1])
+
     # Set ratio range; add dotted line at 1
     if plotfunc.GetBotPad(can) :
         taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(can),-3.999,3.999)
@@ -211,7 +271,12 @@ def afterburner(can) :
             line.Draw()
             plotfunc.tobject_collector.append(line)
 
-    plotfunc.MakeLegend(can,totalentries=2)
+    plotfunc.MakeLegend(can,0.60,0.65,0.92,0.90,totalentries=4)
+
+    # put these back on top:
+    plotfunc.AddHistogram(can,f_bkg,'l')
+    if doAddSignal and h_hyy :
+        plotfunc.AddHistogram(can,h_hyy,'l')
     plotfunc.AddHistogram(can,hist)
     plotfunc.FormatCanvasAxes(can)
 

@@ -19,3 +19,12 @@ nbkg_resolved_highptt_2015-18	  = 83.2756	 +/-  10.475	(limited)
 nbkg_resolved_incl_2015-18	  = 3704.54	 +/-  70.2676	(limited)
 nbkg_resolved_vbf_2015-18	  = 9.39654	 +/-  3.55913	(limited)
 slope_resolved_vbf_2015-18	  = -0.0393131	 +/-  0.0251039	(limited)
+
+# This is taken in the window 105-160
+hyy_resolved_incl_2015-18     = 0.543889660
+hyy_resolved_vbf_2015-18      = 0.009993179
+hyy_resolved_highptt_2015-18  = 0.026163515
+
+hyy_merged_incl_2015-18     = 2.096553131
+hyy_merged_vbf_2015-18      = 0.072460015
+hyy_merged_highptt_2015-18  = 0.204254456
