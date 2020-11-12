@@ -24,8 +24,27 @@ class CategoryEnum :
     GGF_CHANNELS = [GGF_DIMUON,GGF_RESOLVED_DIELECTRON,GGF_MERGED_DIELECTRON]
     PTT_CHANNELS = [HIPTT_DIMUON,HIPTT_RESOLVED_DIELECTRON,HIPTT_MERGED_DIELECTRON]
 
-def GetPlotText(channel,category) :
+def GetPlotText(channel,category,forPaper=False) :
     _text = ''
+    if forPaper :
+        if category :
+            _text = {CategoryEnum.GGF_DIMUON               :['#font[52]{#mu#mu} low-p_{T#font[52]{t}}'],
+                     CategoryEnum.GGF_RESOLVED_DIELECTRON  :['#font[52]{ee} resolved low-p_{T#font[52]{t}}'],
+                     CategoryEnum.GGF_MERGED_DIELECTRON    :['#font[52]{ee} merged low-p_{T#font[52]{t}}'],
+                     CategoryEnum.VBF_DIMUON               :['#font[52]{#mu#mu} VBF'],
+                     CategoryEnum.VBF_RESOLVED_DIELECTRON  :['#font[52]{ee} resolved VBF'],
+                     CategoryEnum.VBF_MERGED_DIELECTRON    :['#font[52]{ee} merged VBF'],
+                     CategoryEnum.HIPTT_DIMUON             :['#font[52]{#mu#mu} high-p_{T#font[52]{t}}'],
+                     CategoryEnum.HIPTT_RESOLVED_DIELECTRON:['#font[52]{ee} resolved high-p_{T#font[52]{t}}'],
+                     CategoryEnum.HIPTT_MERGED_DIELECTRON  :['#font[52]{ee} merged high-p_{T#font[52]{t}}'],
+                     }.get(category,[])
+        else :
+            _text = {ChannelEnum.DIMUON             : ['#font[52]{#mu#mu} channel'    ],
+                     ChannelEnum.RESOLVED_DIELECTRON: ['#font[52]{ee} resolved channel'],
+                     ChannelEnum.MERGED_DIELECTRON  : ['#font[52]{ee} merged channel'  ]
+                     }.get(channel,['All channels'])
+        return _text
+
     if category :
         _text = {CategoryEnum.GGF_DIMUON             :['Inclusive Dimuon channel'    ],
                  CategoryEnum.GGF_RESOLVED_DIELECTRON:['Inclusive Resolved e channel'],
