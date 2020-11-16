@@ -77,7 +77,8 @@ if cat_i in [1,2,4,5,7,8] :
     total = ROOT.RooAddPdf('fullResult','fullResult',ROOT.RooArgList(signal,background,spSig,hyy))
 
     total_expression = 'background,spSig,signal,hyy'
-    sigPeak_expresssion = 'signal,hyy'
+    sigPeak_expression = 'signal,hyy'
+    hyyTopPlot_expression = 'background,spSig,hyy'
 
     # Hyy for the bottom plot
     total.plotOn(frame,
@@ -85,19 +86,22 @@ if cat_i in [1,2,4,5,7,8] :
                  ROOT.RooFit.LineColor(ROOT.kGreen+1),
                  ROOT.RooFit.Range('tmp_signalRegion',False))
     h_hyyOnly = frame.getCurve()
-
-    # Background + Hyy for the top plot
-    total.plotOn(frame,
-                 ROOT.RooFit.Components('background,spSig,hyy'),
-                 ROOT.RooFit.LineColor(ROOT.kGreen+1),
-                 ROOT.RooFit.Range('tmp_signalRegion',False))
-    h_hyyPlusBkg = frame.getCurve()
+    h_hyyOnly.SetName('h_hyyOnly')
 
 else :
     # The total pdf does not include Hyy
     total = ROOT.RooAddPdf('fullResult','fullResult',ROOT.RooArgList(signal,background,spSig))
     total_expression = 'background,spSig,signal'
-    sigPeak_expresssion = 'signal'
+    sigPeak_expression = 'signal'
+    hyyTopPlot_expression = 'background,spSig'
+
+# Background + Hyy for the top plot
+total.plotOn(frame,
+             ROOT.RooFit.Components(hyyTopPlot_expression),
+             ROOT.RooFit.LineColor(ROOT.kGreen+1),
+             ROOT.RooFit.Range('tmp_signalRegion',False))
+h_hyyPlusBkg = frame.getCurve()
+h_hyyPlusBkg.SetName('h_hyy')
 
 # Total pdf (signal plus background) for the top pad
 total.plotOn(frame,
@@ -108,7 +112,7 @@ h_sig = frame.getCurve()
 
 # just the signal (for the bottom pad)
 total.plotOn(frame,
-             ROOT.RooFit.Components(sigPeak_expresssion),
+             ROOT.RooFit.Components(sigPeak_expression),
              ROOT.RooFit.LineColor(ROOT.kRed),
              ROOT.RooFit.Range('tmp_signalRegion',False))
 h_sigPeak = frame.getCurve()
@@ -122,6 +126,12 @@ frame.Draw()
 
 mystyle = plotfunc.SetupStyle()
 mystyle.SetErrorX(0.0000)
+
+# Names to be communicated to another plot script...!
+h_data.SetName('data')
+h_bkg.SetName('bkg_function')
+h_sig.SetName('h_sig')
+h_sigPeak.SetName('h_sigOnly')
 
 h_data.SetLineWidth(2)
 h_resid.SetLineWidth(2)
@@ -157,11 +167,11 @@ if h_hyyPlusBkg.GetName() != 'delete' :
 can = plotfunc.RatioCanvas('canvas','canvas',500,500)
 plotfunc.AddHistogram(can,h_sig,drawopt='l')
 plotfunc.AddHistogram(can,h_bkg,drawopt='l')
-if h_hyyPlusBkg.GetName() != 'delete' :
+if cat_i in [1,2,4,5,7,8] :
     plotfunc.AddHistogram(can,h_hyyPlusBkg,drawopt='l')
 plotfunc.AddHistogram(can,h_data,drawopt='pE')
 plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_sigPeak,drawopt='l')
-if h_hyyOnly.GetName() != 'delete' :
+if cat_i in [1,2,4,5,7,8] :
     plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_hyyOnly,drawopt='l')
 plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_resid,drawopt='pE')
 plotfunc.FormatCanvasAxes(can)
@@ -192,5 +202,29 @@ can.Update()
 
 can.Print('plots/c%02d_fullFit.pdf'%(cat_i + 1))
 can.Print('plots/c%02d_fullFit.png'%(cat_i + 1))
+
+# Add these to the canvas AFTER printing, to get them into the output root file.
+if cat_i in [0,3,6] :
+    plotfunc.AddHistogram(can,h_hyyPlusBkg,drawopt='l')
+
+# Save results to a file (for making plots that combine channels)
+f = ROOT.TFile('Results_%s.root'%(cat_i + 1),'RECREATE')
+for i in list(plotfunc.GetTopPad(can).GetListOfPrimitives() +
+              plotfunc.GetBotPad(can).GetListOfPrimitives() ) :
+
+    if issubclass(type(i),ROOT.TLegend) :
+        continue
+    if issubclass(type(i),ROOT.TFrame) :
+        continue
+    elif issubclass(type(i),ROOT.TF1) :
+        tmp = i.GetHistogram()
+        tmp.SetName(i.GetName())
+        print tmp.GetName()
+        tmp.Write()
+    else :
+        print i.GetName()
+        i.Write()
+
+f.Close()
 
 # code.interact(banner='Pausing... Press Contol-D to exit.',local=locals())
