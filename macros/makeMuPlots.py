@@ -4,25 +4,49 @@ import PlotFunctions as plotfunc
 from array import array
 import math
 
-# Latest (hacked for using HESSE)
-mu_highptt, mu_highptt_sigma =  3.3556e+00 ,  1.33e+00
-mu_incl   , mu_incl_sigma    =  8.0667e-01 ,  5.63e-01
-mu_vbf    , mu_vbf_sigma     =  2.6577e+00 ,  1.53e+00
-unused,mu_highptt_stat =    3.3537e+00 ,  1.24e+00
-unused,mu_incl_stat =       8.0850e-01 ,  5.45e-01
-unused,mu_vbf_stat =        2.6593e+00 ,  1.49e+00
-#
-mu_electrons,mu_electrons_sigma =   9.4746e-01 ,  6.77e-01
-mu_muons_2np,mu_muons_2np_sigma         =   1.9325e+00 ,  6.70e-01
-unused,mu_electrons_stat =   9.4598e-01 ,  6.37e-01
-unused,mu_muons_2np_stat     =   1.9330e+00 ,  6.41e-01
-#
-mu_merged, mu_merged_sigma     =   7.7662e-01 ,  8.34e-01
-mu_muons_3np, mu_muons_3np_sigma       =   1.9338e+00 ,  6.70e-01
-mu_resolved, mu_resolved_sigma =   1.2388e+00 ,  1.10e+00           
-unused,mu_merged_stat   =   7.7498e-01 ,  7.95e-01
-unused,mu_muons_3np_stat    =   1.9341e+00 ,  6.41e-01
-unused,mu_resolved_stat =   1.2394e+00 ,  1.05e+00
+ROOT.gROOT.SetBatch(True)
+
+mystyle = plotfunc.SetupStyle()
+
+# Latest results (includes BR uncertainty)
+mu_merged, mu_merged_sigma       = 7.7638e-01 ,  8.35e-01
+mu_muons_3np, mu_muons_3np_sigma = 1.9336e+00 ,  6.79e-01
+mu_resolved, mu_resolved_sigma   = 1.2393e+00 ,  1.10e+00
+unused,mu_merged_stat            = 7.7500e-01 ,  7.95e-01
+unused,mu_muons_3np_stat         = 1.9342e+00 ,  6.41e-01
+unused,mu_resolved_stat          = 1.2395e+00 ,  1.05e+00
+
+mu_highptt, mu_highptt_sigma =  3.3563e+00 ,  1.34e+00
+mu_incl   , mu_incl_sigma    =  8.0635e-01 ,  5.65e-01
+mu_vbf    , mu_vbf_sigma     =  2.6580e+00 ,  1.54e+00
+unused    , mu_highptt_stat  =  3.3537e+00 ,  1.24e+00
+unused    , mu_incl_stat     =  8.0849e-01 ,  5.45e-01
+unused    , mu_vbf_stat      =  2.6593e+00 ,  1.49e+00
+
+mu_electrons,mu_electrons_sigma =  9.4723e-01 ,  6.79e-01
+mu_muons_2np,mu_muons_2np_sigma =  1.9321e+00 ,  6.79e-01
+unused,mu_electrons_stat        =  9.4607e-01 ,  6.37e-01
+unused,mu_muons_2np_stat        =  1.9329e+00 ,  6.41e-01
+
+# Newer results (hacked for using HESSE)
+# mu_highptt, mu_highptt_sigma =  3.3556e+00 ,  1.33e+00
+# mu_incl   , mu_incl_sigma    =  8.0667e-01 ,  5.63e-01
+# mu_vbf    , mu_vbf_sigma     =  2.6577e+00 ,  1.53e+00
+# unused    , mu_highptt_stat  =  3.3537e+00 ,  1.24e+00
+# unused    , mu_incl_stat     =  8.0850e-01 ,  5.45e-01
+# unused    , mu_vbf_stat      =  2.6593e+00 ,  1.49e+00
+# #
+# mu_electrons,mu_electrons_sigma =   9.4746e-01 ,  6.77e-01
+# mu_muons_2np,mu_muons_2np_sigma =   1.9325e+00 ,  6.70e-01
+# unused,mu_electrons_stat        =   9.4598e-01 ,  6.37e-01
+# unused,mu_muons_2np_stat        =   1.9330e+00 ,  6.41e-01
+# #
+# mu_merged, mu_merged_sigma       =   7.7662e-01 ,  8.34e-01
+# mu_muons_3np, mu_muons_3np_sigma =   1.9338e+00 ,  6.70e-01
+# mu_resolved, mu_resolved_sigma   =   1.2388e+00 ,  1.10e+00
+# unused,mu_merged_stat            =   7.7498e-01 ,  7.95e-01
+# unused,mu_muons_3np_stat         =   1.9341e+00 ,  6.41e-01
+# unused,mu_resolved_stat          =   1.2394e+00 ,  1.05e+00
 
 mu_highptt_syst   = math.sqrt(pow(mu_highptt_sigma   ,2) - pow(mu_highptt_stat  ,2))
 mu_incl_syst      = math.sqrt(pow(mu_incl_sigma      ,2) - pow(mu_incl_stat     ,2))
@@ -43,8 +67,15 @@ mu_resolved_syst  = math.sqrt(pow(mu_resolved_sigma  ,2) - pow(mu_resolved_stat 
 # mu_muons,sigma_muons =  1.93314 , 0.670348
 # mu_elecs,sigma_elecs =  0.946831 , 0.677204
 
+# This was my first estimate, with rounding
 #mu_global,sigma_global = 1.46 , 0.47
-mu_global,sigma_global,stat_global = 1.4615,0.471979,0.454714
+
+# Newer results from Artem
+#mu_global,sigma_global,stat_global = 1.4615,0.471979,0.454714
+
+# Newest results (includes BR uncertainty)
+mu_global,sigma_global,stat_global = 1.4611,4.81e-01,4.55e-01
+
 syst_global = math.sqrt(pow(sigma_global ,2) - pow(stat_global ,2))
 
 #########################
@@ -61,25 +92,46 @@ syst_global = math.sqrt(pow(sigma_global ,2) - pow(stat_global ,2))
 # merged_highptt   ,merged_highptt_sigma   = 2.90995 , 2.00156
 
 # Newer results from Artem
-merged_highptt  ,merged_highptt_sigma    = 2.90856      ,  1.99971 
-merged_incl     ,merged_incl_sigma       = -0.772254    ,  1.15611 
-merged_vbf      ,merged_vbf_sigma        = 3.24929      ,  2.5339  
-muons_highptt   ,muons_highptt_sigma     = 3.82683      ,  1.79582 
-muons_incl      ,muons_incl_sigma        = 1.5508       ,  0.773821
-muons_vbf       ,muons_vbf_sigma         = 1.94935      ,  2.11238 
-resolved_highptt,resolved_highptt_sigma  = 2.94297      ,  3.13212 
-resolved_incl   ,resolved_incl_sigma     = 0.680531     ,  1.2861  
-resolved_vbf    ,resolved_vbf_sigma      = 3.03117      ,  3.22659 
+# merged_highptt  ,merged_highptt_sigma    = 2.90856      ,  1.99971
+# merged_incl     ,merged_incl_sigma       = -0.772254    ,  1.15611
+# merged_vbf      ,merged_vbf_sigma        = 3.24929      ,  2.5339
+# muons_highptt   ,muons_highptt_sigma     = 3.82683      ,  1.79582
+# muons_incl      ,muons_incl_sigma        = 1.5508       ,  0.773821
+# muons_vbf       ,muons_vbf_sigma         = 1.94935      ,  2.11238
+# resolved_highptt,resolved_highptt_sigma  = 2.94297      ,  3.13212
+# resolved_incl   ,resolved_incl_sigma     = 0.680531     ,  1.2861
+# resolved_vbf    ,resolved_vbf_sigma      = 3.03117      ,  3.22659
 
-unused,merged_highptt_stat   = 2.90928    ,  1.94657
-unused,merged_incl_stat      = -0.772175  ,  1.08723
-unused,merged_vbf_stat       = 3.25539    ,  2.47573
-unused,muons_highptt_stat    = 3.82647    ,  1.72881
-unused,muons_incl_stat       = 1.55135    ,  0.739639
-unused,muons_vbf_stat        = 1.95237    ,  2.08112
-unused,resolved_highptt_stat = 2.94334    ,  3.07789
-unused,resolved_incl_stat    = 0.679171   ,  1.22086
-unused,resolved_vbf_stat     = 3.02543    ,  3.21153
+# unused,merged_highptt_stat   = 2.90928    ,  1.94657
+# unused,merged_incl_stat      = -0.772175  ,  1.08723
+# unused,merged_vbf_stat       = 3.25539    ,  2.47573
+# unused,muons_highptt_stat    = 3.82647    ,  1.72881
+# unused,muons_incl_stat       = 1.55135    ,  0.739639
+# unused,muons_vbf_stat        = 1.95237    ,  2.08112
+# unused,resolved_highptt_stat = 2.94334    ,  3.07789
+# unused,resolved_incl_stat    = 0.679171   ,  1.22086
+# unused,resolved_vbf_stat     = 3.02543    ,  3.21153
+
+# Latest results (includes BR uncertainty)
+merged_highptt  ,merged_highptt_sigma    =   2.9091e+00 ,  2.01e+00
+merged_incl     ,merged_incl_sigma       =  -7.7189e-01 ,  1.16e+00
+merged_vbf      ,merged_vbf_sigma        =   3.2553e+00 ,  2.54e+00
+muons_highptt   ,muons_highptt_sigma     =   3.8263e+00 ,  1.81e+00
+muons_incl      ,muons_incl_sigma        =   1.5514e+00 ,  7.79e-01
+muons_vbf       ,muons_vbf_sigma         =   1.9524e+00 ,  2.12e+00
+resolved_highptt,resolved_highptt_sigma  =   2.9433e+00 ,  3.14e+00
+resolved_incl   ,resolved_incl_sigma     =   6.7906e-01 ,  1.29e+00
+resolved_vbf    ,resolved_vbf_sigma      =   3.0254e+00 ,  3.23e+00
+
+unused,merged_highptt_stat   =   2.9091e+00 ,  1.95e+00
+unused,merged_incl_stat      =  -7.7190e-01 ,  1.09e+00
+unused,merged_vbf_stat       =   3.2553e+00 ,  2.48e+00
+unused,muons_highptt_stat    =   3.8263e+00 ,  1.73e+00
+unused,muons_incl_stat       =   1.5514e+00 ,  7.40e-01
+unused,muons_vbf_stat        =   1.9524e+00 ,  2.08e+00
+unused,resolved_highptt_stat =   2.9433e+00 ,  3.08e+00
+unused,resolved_incl_stat    =   6.7906e-01 ,  1.22e+00
+unused,resolved_vbf_stat     =   3.0254e+00 ,  3.20e+00
 
 merged_highptt_syst   = math.sqrt(pow(merged_highptt_sigma   ,2) - pow(merged_highptt_stat    ,2))
 merged_incl_syst      = math.sqrt(pow(merged_incl_sigma      ,2) - pow(merged_incl_stat       ,2))
@@ -202,11 +254,12 @@ hist_syst.SetLineWidth(7)
 plotfunc.AddHistogram(can,hist_syst,drawopt='E')
 
 plotfunc.DrawText(can,channels_text,0.07,0.11,0.5,0.95)
-plotfunc.DrawText(can,text_lines,0.62,0.83,0.97,0.93)
+plotfunc.DrawText(can,text_lines,0.70,0.83,0.99,0.93)
 plotfunc.MakeLegend(can,         0.78,0.63,0.97,0.83,option=['pL','L'])
 can.GetPrimitive('multiMu_hist_errors_total').Draw('pE')
 plotfunc.AddHistogram(can,hist_bestFitMu)
 
+plotfunc.FormatCanvasAxes(can)
 plotfunc.SetAxisLabels(can,'#mu','')
 plotfunc.FormatCanvasAxes(can)
 for i in can.GetListOfPrimitives() :
@@ -333,11 +386,12 @@ hist_indiv_ch_syst.SetLineWidth(7)
 plotfunc.AddHistogram(can2,hist_indiv_ch_syst,drawopt='E')
 
 plotfunc.DrawText(can2,channels_text,0.07,0.11,0.5,0.95)
-plotfunc.DrawText(can2,text_lines,0.62,0.20,0.97,0.30)
+plotfunc.DrawText(can2,text_lines,0.70,0.20,0.99,0.30)
 plotfunc.MakeLegend(can2,         0.78,0.25,1.00,0.45,option=['pL','L'])
 can2.GetPrimitive('multiMu9_hist_indiv_ch_errors_total').Draw('pE')
 plotfunc.AddHistogram(can2,hist_bestFitMu)
 
+plotfunc.FormatCanvasAxes(can2)
 for i in can2.GetListOfPrimitives() :
     if hasattr(i,'GetYaxis') :
         i.GetYaxis().SetTickLength(0)

@@ -284,7 +284,7 @@ plotfunc.SetAxisLabels(c,'m_{ll#gamma} [GeV]','#scale[1.5]{#Sigma}^{ }weights / 
 text = 'ln(1 + S_{90}^{ }/^{ }B_{90}) weighted sum'
 outname = 'weighted'
 
-taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-3,8)
+taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-3,8) # Use 5 for 1-GeV, 8 for 2-GeV
 if doMuonOnly :
     outname += '_muonOnly'
     text += ', Muon Categories'

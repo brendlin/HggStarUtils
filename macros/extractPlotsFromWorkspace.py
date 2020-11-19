@@ -23,6 +23,13 @@ dataList = data.split(cat,True)
 print list(a.GetName() for a in dataList)
 
 cat_i = int(sys.argv[1])
+
+###
+###
+nbins = 50 # 25 is nominal; 15 is for high-ptt chi2.
+###
+###
+
 cat.setIndex(cat_i)
 channelname = cat.getCurrentLabel()
 pdfi = combinedPdf.getPdf(channelname)
@@ -36,7 +43,7 @@ frame = mass.frame()
 
 datai.plotOn(frame,
              ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson),
-             ROOT.RooFit.Binning(25))
+             ROOT.RooFit.Binning(nbins))
 h_data = frame.getHist().Clone()
 
 # Get rid of X-error bars
@@ -82,6 +89,7 @@ if cat_i in [1,2,4,5,7,8] :
 
     # Hyy for the bottom plot
     total.plotOn(frame,
+                 ROOT.RooFit.Normalization(1.0,ROOT.RooAbsReal.RelativeExpected),
                  ROOT.RooFit.Components('hyy'),
                  ROOT.RooFit.LineColor(ROOT.kGreen+1),
                  ROOT.RooFit.Range('tmp_signalRegion',False))
@@ -95,8 +103,18 @@ else :
     sigPeak_expression = 'signal'
     hyyTopPlot_expression = 'background,spSig'
 
+# All, full range for chi2
+total.plotOn(frame,
+             ROOT.RooFit.Normalization(1.0,ROOT.RooAbsReal.RelativeExpected),
+             ROOT.RooFit.Components(total_expression),
+             ROOT.RooFit.LineColor(ROOT.kMagenta+1))
+ndof = [2,1,2,1,1,1,1,1,1][cat_i]
+chi2 = frame.chiSquare(1+ndof)
+pvalue_chi2 = ROOT.TMath.Prob(chi2*(nbins-1-ndof),nbins-1-ndof)
+
 # Background + Hyy for the top plot
 total.plotOn(frame,
+             ROOT.RooFit.Normalization(1.0,ROOT.RooAbsReal.RelativeExpected),
              ROOT.RooFit.Components(hyyTopPlot_expression),
              ROOT.RooFit.LineColor(ROOT.kGreen+1),
              ROOT.RooFit.Range('tmp_signalRegion',False))
@@ -105,6 +123,7 @@ h_hyyPlusBkg.SetName('h_hyy')
 
 # Total pdf (signal plus background) for the top pad
 total.plotOn(frame,
+             ROOT.RooFit.Normalization(1.0,ROOT.RooAbsReal.RelativeExpected),
              ROOT.RooFit.Components(total_expression),
              ROOT.RooFit.LineColor(ROOT.kRed),
              ROOT.RooFit.Range('tmp_signalRegion',False))
@@ -112,13 +131,17 @@ h_sig = frame.getCurve()
 
 # just the signal (for the bottom pad)
 total.plotOn(frame,
+             ROOT.RooFit.Normalization(1.0,ROOT.RooAbsReal.RelativeExpected),
              ROOT.RooFit.Components(sigPeak_expression),
              ROOT.RooFit.LineColor(ROOT.kRed),
              ROOT.RooFit.Range('tmp_signalRegion',False))
 h_sigPeak = frame.getCurve()
 
 # all bakckgrounds (for the top pad) (this is the reference for the residual histogram)
-total.plotOn(frame,ROOT.RooFit.Components('background,spSig'),ROOT.RooFit.LineColor(ROOT.kBlue))
+total.plotOn(frame,
+             ROOT.RooFit.Normalization(1.0,ROOT.RooAbsReal.RelativeExpected),
+             ROOT.RooFit.Components('background,spSig'),
+             ROOT.RooFit.LineColor(ROOT.kBlue))
 h_bkg = frame.getCurve()
 h_resid = frame.residHist()
 
@@ -186,7 +209,8 @@ plotfunc.tobject_collector.append(line)
 
 text_lines = [plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0),
               plotfunc.GetAtlasInternalText(),
-              HggStarHelpers.GetPlotText(999,cat_i + 1,forPaper=True)[0]]
+              HggStarHelpers.GetPlotText(999,cat_i + 1,forPaper=True)[0],
+              ]
 plotfunc.DrawText(can,text_lines,0.2,0.65,0.50,0.90,totalentries=4)
 plotfunc.MakeLegend(can,        0.54,0.65,0.91,0.90,totalentries=4,ncolumns=1,skip=['remove me'])
 
@@ -202,6 +226,20 @@ can.Update()
 
 can.Print('plots/c%02d_fullFit.pdf'%(cat_i + 1))
 can.Print('plots/c%02d_fullFit.png'%(cat_i + 1))
+
+# Hard-code pvalue for low-stat categories!
+pvalue_chi2 = {3:-99,
+               4:-99,
+               5:-99,
+               6:0.78829, # obtained using 15 bins
+               7:0.56581, # obtained using 15 bins
+               8:0.59610, # obtained using 15 bins
+               }.get(cat_i,pvalue_chi2)
+if pvalue_chi2 >= 0 :
+    plotfunc.DrawText(can,['p(#chi^{2}) = %.2f'%(pvalue_chi2)],0.71,0.60,0.95,0.65,totalentries=1)
+
+can.Print('plots/c%02d_fullFit_chi2text.pdf'%(cat_i + 1))
+can.Print('plots/c%02d_fullFit_chi2text.png'%(cat_i + 1))
 
 # Add these to the canvas AFTER printing, to get them into the output root file.
 if cat_i in [0,3,6] :
