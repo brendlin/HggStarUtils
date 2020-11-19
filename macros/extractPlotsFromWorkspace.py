@@ -23,10 +23,11 @@ dataList = data.split(cat,True)
 print list(a.GetName() for a in dataList)
 
 cat_i = int(sys.argv[1])
+isElectronChannel = (cat_i in [1,2,4,5,7,8])
 
 ###
 ###
-nbins = 50 # 25 is nominal; 15 is for high-ptt chi2.
+nbins = 25 # 25 is nominal; 15 is for high-ptt chi2. 50 is for 1-GeV binning plot.
 ###
 ###
 
@@ -75,7 +76,7 @@ h_hyyPlusBkg = ROOT.TH1F('delete','delete',1,0,1)
 
 # If it is an electron channel, then you need to include
 # the hyy in the various components (total, signal peak, etc)
-if cat_i in [1,2,4,5,7,8] :
+if isElectronChannel :
     hyyShape = combWS.pdf('pdf__Hyy_background_' + channelname)
     hyyYield = combWS.function('yield__Hyy_background_' + channelname)
     hyy = ROOT.RooAddPdf('hyy','hyy',ROOT.RooArgList(hyyShape),ROOT.RooArgList(hyyYield))
@@ -145,6 +146,10 @@ total.plotOn(frame,
 h_bkg = frame.getCurve()
 h_resid = frame.residHist()
 
+for i in range(h_resid.GetN()) :
+    if abs(h_data.GetPointY(i)) < 0.00001 :
+        h_resid.SetPoint(i,h_resid.GetPointX(i),-99)
+
 frame.Draw()
 
 mystyle = plotfunc.SetupStyle()
@@ -182,19 +187,19 @@ function = {
 
 h_data.SetTitle('Data')
 h_bkg.SetTitle('Bkg (%s)'%(function))
-h_hyyPlusBkg.SetTitle('Bkg + H^{ }#rightarrow^{ }#gamma#gamma')
-h_sig.SetTitle('Sig^{ }#times^{ }1.46 + Bkg')
-if h_hyyPlusBkg.GetName() != 'delete' :
-    h_sig.SetTitle('Sig^{ }#times^{ }1.46 + all Bkgs')
+h_hyyPlusBkg.SetTitle('Bkg^{ }+^{ }H^{ }#rightarrow^{ }#gamma#gamma')
+h_sig.SetTitle('Bkg^{ }+^{ }Sig^{ }#times^{ }1.46')
+if isElectronChannel :
+    h_sig.SetTitle('Bkg^{ }+^{ }H^{ }#rightarrow^{ }#gamma#gamma^{ }+^{ }Sig^{ }#times^{ }1.46')
 
 can = plotfunc.RatioCanvas('canvas','canvas',500,500)
 plotfunc.AddHistogram(can,h_sig,drawopt='l')
 plotfunc.AddHistogram(can,h_bkg,drawopt='l')
-if cat_i in [1,2,4,5,7,8] :
+if isElectronChannel :
     plotfunc.AddHistogram(can,h_hyyPlusBkg,drawopt='l')
 plotfunc.AddHistogram(can,h_data,drawopt='pE')
 plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_sigPeak,drawopt='l')
-if cat_i in [1,2,4,5,7,8] :
+if isElectronChannel :
     plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_hyyOnly,drawopt='l')
 plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_resid,drawopt='pE')
 plotfunc.FormatCanvasAxes(can)
@@ -207,19 +212,31 @@ plotfunc.GetBotPad(can).cd()
 line.Draw()
 plotfunc.tobject_collector.append(line)
 
-text_lines = [plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0),
-              plotfunc.GetAtlasInternalText(),
+text_lines = [plotfunc.GetAtlasInternalText(),
+              '%s, %s'%(plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0)),
+              '',
               HggStarHelpers.GetPlotText(999,cat_i + 1,forPaper=True)[0],
               ]
-plotfunc.DrawText(can,text_lines,0.2,0.65,0.50,0.90,totalentries=4)
-plotfunc.MakeLegend(can,        0.54,0.65,0.91,0.90,totalentries=4,ncolumns=1,skip=['remove me'])
+plotfunc.DrawText(can,text_lines,0.61,0.65,0.94,0.90,totalentries=4,textsize=17)
+order = [1,2,0,3] if isElectronChannel else [1,0,2]
+plotfunc.MakeLegend(can,0.20,0.65,0.58,0.90,totalentries=4,textsize=17,ncolumns=1,order=order)
 
 ranges = plotfunc.AutoFixYaxis(plotfunc.GetTopPad(can))
 plotfunc.SetYaxisRanges(plotfunc.GetTopPad(can),0.001,ranges[1])
 
 # Set the bottom plot ranges to something symmetric, based on the upper limit.
-ranges = plotfunc.AutoFixYaxis(plotfunc.GetBotPad(can),ignoretext=True)
-plotfunc.SetYaxisRanges(plotfunc.GetBotPad(can),-1.5*ranges[1],1.5*ranges[1])
+#ranges = plotfunc.AutoFixYaxis(plotfunc.GetBotPad(can),ignoretext=True)
+#plotfunc.SetYaxisRanges(plotfunc.GetBotPad(can),-1.5*ranges[1],1.5*ranges[1])
+bottom_ranges = {0:[-90,90],
+                 1:[-55,55],
+                 2:[-60,60],
+                 3:[-3.999,7.999],
+                 4:[-3.999,7.999],
+                 5:[-3.999,7.999],
+                 6:[-14.999,14.999],
+                 7:[-14.999,14.999],
+                 8:[-14.999,14.999]}.get(cat_i)
+plotfunc.SetYaxisRanges(plotfunc.GetBotPad(can),*bottom_ranges)
 
 can.Modified()
 can.Update()
@@ -236,7 +253,7 @@ pvalue_chi2 = {3:-99,
                8:0.59610, # obtained using 15 bins
                }.get(cat_i,pvalue_chi2)
 if pvalue_chi2 >= 0 :
-    plotfunc.DrawText(can,['p(#chi^{2}) = %.2f'%(pvalue_chi2)],0.71,0.60,0.95,0.65,totalentries=1)
+    plotfunc.DrawText(can,['p(#chi^{2}) = %.2f'%(pvalue_chi2)],0.71,0.55,0.95,0.60,totalentries=1,textsize=17)
 
 can.Print('plots/c%02d_fullFit_chi2text.pdf'%(cat_i + 1))
 can.Print('plots/c%02d_fullFit_chi2text.png'%(cat_i + 1))
@@ -265,4 +282,5 @@ for i in list(plotfunc.GetTopPad(can).GetListOfPrimitives() +
 
 f.Close()
 
-# code.interact(banner='Pausing... Press Contol-D to exit.',local=locals())
+if not ROOT.gROOT.IsBatch() :
+    code.interact(banner='Pausing... Press Contol-D to exit.',local=locals())

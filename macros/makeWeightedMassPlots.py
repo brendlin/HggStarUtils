@@ -234,8 +234,8 @@ plotfunc.AddHistogram(c,bkg,drawopt_pdfs)
 plotfunc.AddHistogram(c,bkg_plus_hyy,drawopt_pdfs)
 plotfunc.AddHistogram(c,signal,drawopt_pdfs)
 plotfunc.AddHistogram(c,data)
-plotfunc.AutoFixYaxis(plotfunc.GetTopPad(c),minzero=True)
-
+ranges = plotfunc.AutoFixYaxis(plotfunc.GetTopPad(c),minzero=True)
+plotfunc.SetYaxisRanges(plotfunc.GetTopPad(c),ranges[0],int(ranges[1]*1.05))
 
 ratioplot = ROOT.TGraphAsymmErrors() # hist.Clone()
 ratioplot.SetMarkerSize(1)
@@ -308,32 +308,30 @@ if doVBFOnly :
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-0.999,2.6)
 if doHipttOnly :
     outname += '_hipttOnly'
-    text += ', high-p_{TThrust} Categories'
+    text += ', high-p_{T#font[52]{t}} Categories'
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-1.5,2.0)
 if doInclusiveOnly :
     outname += '_inclusiveOnly'
-    text += ', Inclusive (rest) Categories'
+    text += ', low-p_{T#font[52]{t}} Categories'
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-1.999,4.0)
 
 taxisfunc.SetXaxisRanges(c,110,160)
 taxisfunc.SetXaxisRanges(plotfunc.GetBotPad(c),110,160)
-plotfunc.MakeLegend(c,0.50,0.65,0.82,0.90,totalentries=4)
+plotfunc.MakeLegend(c,0.50,0.65,0.82,0.90,totalentries=4,textsize=17)
 
 if doVBFOnly or doHipttOnly :
-    plotfunc.DrawText(c,[plotfunc.GetSqrtsText(13),
-                         plotfunc.GetLuminosityText(139.0),
-                         plotfunc.GetAtlasInternalText(),
-                         ' ',
+    plotfunc.DrawText(c,[plotfunc.GetAtlasInternalText(),
+                         '%s, %s'%(plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0)),
+                         ' ',' ',
                          text,
-                         ],0.2,0.58,0.5,0.90,totalentries=5)
+                         ],0.2,0.58,0.5,0.90,totalentries=5,textsize=17)
     ranges = taxisfunc.AutoFixYaxis(plotfunc.GetTopPad(c),minzero=True)
     taxisfunc.SetYaxisRanges(plotfunc.GetTopPad(c),0.001,ranges[1])
 else :
-    plotfunc.DrawText(c,[plotfunc.GetSqrtsText(13),
-                         plotfunc.GetLuminosityText(139.0),
-                         plotfunc.GetAtlasInternalText(),
+    plotfunc.DrawText(c,[plotfunc.GetAtlasInternalText(),
+                         '%s, %s'%(plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0)),
                          text,
-                         ],0.2,0.10,0.5,0.37,totalentries=4)
+                         ],0.2,0.08,0.5,0.29,totalentries=3,textsize=17)
 
 
 line = ROOT.TLine(110,0,160,0)
