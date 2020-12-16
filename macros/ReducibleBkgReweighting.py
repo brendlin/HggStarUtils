@@ -5,6 +5,8 @@ import PlotFunctions as plotfunc
 import TAxisFunctions as taxisfunc
 import PyAnalysisPlotting as anaplot
 import os 
+import HggStarHelpers
+import PlotText
 
 categories = [
     #None,
@@ -136,7 +138,7 @@ def DoRescaleProcedure(gen,bkg,name,ci,c) :
         return [],[],1
 
     # Print the "before" picture
-    cans.append(plotfunc.RatioCanvas('UntouchedRatio_%02d_%s_%s'%(ci,c,name),'%d_%s_%s'%(ci,c,name),600,500))
+    cans.append(plotfunc.RatioCanvas('UntouchedRatio_%02d_%s_%s'%(ci,c,name),'%d_%s_%s'%(ci,c,name),500,500))
     gen_rebin = plotfunc.AddHistogram(cans[-1],gen)
     bkg_rebin = bkg.Clone()
     bkg_rebin.SetName(bkg_rebin.GetName()+'_forRebinning')
@@ -154,7 +156,7 @@ def DoRescaleProcedure(gen,bkg,name,ci,c) :
     taxisfunc.AutoFixYaxis(plotfunc.GetTopPad(cans[-1]),minzero=True)
     taxisfunc.SetXaxisRanges(cans[-1],105,160)
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(cans[-1]),0,3)
-    plotfunc.SetAxisLabels(cans[-1],'m_{ll#gamma} [GeV]','entries','ratio')
+    plotfunc.SetAxisLabels(cans[-1],'m_{%s} [GeV]'%(PlotText.llg_subscript),'entries','ratio')
 
 
     # Fit the ratio of the CR and the GEN with a line
@@ -213,7 +215,7 @@ def DoRescaleProcedure(gen,bkg,name,ci,c) :
         gen_result.Scale(integral(bkg,105,160)/integral(gen_result,105,160))
 
     # Print the "after" (rescaled) result
-    cans.append(plotfunc.RatioCanvas('rescaled_%02d_%s_%s'%(ci,c,name),'%d_%s_%s_rescaled'%(ci,c,name),600,500))
+    cans.append(plotfunc.RatioCanvas('rescaled_%02d_%s_%s'%(ci,c,name),'%d_%s_%s_rescaled'%(ci,c,name),500,500))
     gen_before.Rebin(rebin_factor)
     plotfunc.AddHistogram(cans[-1],gen_before)
     bkg.Rebin(rebin_factor)
@@ -225,7 +227,7 @@ def DoRescaleProcedure(gen,bkg,name,ci,c) :
     taxisfunc.SetXaxisRanges(cans[-1],105,160)
     taxisfunc.AutoFixYaxis(plotfunc.GetTopPad(cans[-1]),minzero=True)
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(cans[-1]),-4,4)
-    plotfunc.SetAxisLabels(cans[-1],'m_{ll#gamma} [GeV]','entries','pull')
+    plotfunc.SetAxisLabels(cans[-1],'m_{%s} [GeV]'%(PlotText.llg_subscript),'entries','pull')
 
     pars = []
     for i in range(function.GetNpar()) :
@@ -254,7 +256,7 @@ def main(options,args) :
             yj_hidr = ROOT.TH1F()
         llj = fakes_file.Get('DataCR_llj_c%d'%(i_cat+offset))
 
-        gen.SetTitle('ll#gamma')
+        gen.SetTitle(PlotText.llg)
 
         #print c, gen.Integral(), yj.Integral(), llj.Integral()
         #continue
@@ -389,7 +391,7 @@ def main(options,args) :
         gen_llj_stack.Scale( data_integral / gen_integral_postRW )
         gen.Scale( data_integral / gen_integral_postRW )
 
-        main_can = plotfunc.RatioCanvas('Mimic_Plot_%02d_%s'%(i_cat+offset,c),'Mimic plot',600,500)
+        main_can = plotfunc.RatioCanvas('massTemplate_c%02d'%(i_cat+offset),'Mimic plot',500,500)
         rebin_factor = 12 # 660 / 12 = 55
         gen_llj_stack.Rebin(rebin_factor)
         plotfunc.AddHistogram(main_can,gen_llj_stack)
@@ -414,9 +416,9 @@ def main(options,args) :
         data_blinded.Rebin(rebin_factor)
         data_blinded.SetTitle('Data')
         data_blinded.SetBinErrorOption(ROOT.TH1.kPoisson)
-        gen.SetMarkerSize(0); gen.SetLineColor(1); gen.SetLineWidth(2); gen.SetFillColor(1)
+        gen.SetMarkerSize(0); gen.SetLineColor(1); gen.SetLineWidth(0); gen.SetFillColor(1)
         gen.SetFillStyle(3254);
-        gen.SetTitle('SM')
+        gen.SetTitle('MC stat. error')
         plotfunc.AddHistogram(main_can,gen,drawopt='E2')
         taxisfunc.AutoFixAxes(main_can)
         p_chi2 = None
@@ -424,12 +426,12 @@ def main(options,args) :
         if False :
             # RATIO
             plotfunc.AddRatio(main_can,data_blinded,gen)
-            plotfunc.SetAxisLabels(main_can,'m_{ll#gamma} [GeV]','entries','ratio')
+            plotfunc.SetAxisLabels(main_can,'m_{%s} [GeV]'%(PlotText.llg_subscript),'Entries^{ }/^{ }GeV','Ratio')
             anaplot.RatioRangeAfterBurner(main_can)
         else :
             # PULL
             unused,pull = plotfunc.AddRatio(main_can,data_blinded,gen,divide='pull')
-            plotfunc.SetAxisLabels(main_can,'m_{ll#gamma} [GeV]','entries','pull')
+            plotfunc.SetAxisLabels(main_can,'m_{%s} [GeV]'%(PlotText.llg_subscript),'Entries^{ }/^{ }GeV','Pull')
             nbins = 0
             chi2 = 0
 
@@ -446,22 +448,19 @@ def main(options,args) :
 
         the_text = [plotfunc.GetAtlasInternalText(),
                     plotfunc.GetSqrtsText(13)+', '+plotfunc.GetLuminosityText(139.0),
-                    CategoryNames_ysy[c]
+                    HggStarHelpers.GetPlotText((i_cat+1)%3,i_cat+1,forPaper=True)[0]
                     ]
-        if p_chi2 != None :
+        if p_chi2 != None and False :
             the_text.append('p(#chi^{2}) = %.2f%%'%(p_chi2*100))
         plotfunc.DrawText(main_can,the_text,.2,0.62,.61,.90,totalentries=4)
         taxisfunc.SetXaxisRanges(main_can,105,160)
         taxisfunc.AutoFixYaxis(plotfunc.GetTopPad(main_can),forcemin=0.0001)
 
-        if 'RESOLVED' in c :
-            plotfunc.MakeLegend(main_can,0.70,0.46,0.92,0.90,ncolumns=1)
-        else :
-            plotfunc.MakeLegend(main_can,0.70,0.67,0.92,0.90,ncolumns=2)
+        plotfunc.MakeLegend(main_can,0.65,0.46,0.92,0.90,ncolumns=1,totalentries=6)
         tmp.append(main_can)
 
         for can in tmp :
-            plotfunc.FormatCanvasAxes(can)
+            plotfunc.FormatCanvasAxes500500(can)
 
         anaplot.UpdateCanvases(tmp)
         os.system('mkdir -p c%02d_%s'%(i_cat+1,c))

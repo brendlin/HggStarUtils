@@ -28,18 +28,18 @@ def GetPlotText(channel,category,forPaper=False) :
     _text = ''
     if forPaper :
         if category :
-            _text = {CategoryEnum.GGF_DIMUON               :['#font[52]{#mu#mu} low-p_{T#font[52]{t}}'],
-                     CategoryEnum.GGF_RESOLVED_DIELECTRON  :['#font[52]{ee} resolved low-p_{T#font[52]{t}}'],
-                     CategoryEnum.GGF_MERGED_DIELECTRON    :['#font[52]{ee} merged low-p_{T#font[52]{t}}'],
-                     CategoryEnum.VBF_DIMUON               :['#font[52]{#mu#mu} VBF'],
+            _text = {CategoryEnum.GGF_DIMUON               :['#font[152]{mm} low-#font[52]{p}_{T#font[52]{t}}'],
+                     CategoryEnum.GGF_RESOLVED_DIELECTRON  :['#font[52]{ee} resolved low-#font[52]{p}_{T#font[52]{t}}'],
+                     CategoryEnum.GGF_MERGED_DIELECTRON    :['#font[52]{ee} merged low-#font[52]{p}_{T#font[52]{t}}'],
+                     CategoryEnum.VBF_DIMUON               :['#font[152]{mm} VBF'],
                      CategoryEnum.VBF_RESOLVED_DIELECTRON  :['#font[52]{ee} resolved VBF'],
                      CategoryEnum.VBF_MERGED_DIELECTRON    :['#font[52]{ee} merged VBF'],
-                     CategoryEnum.HIPTT_DIMUON             :['#font[52]{#mu#mu} high-p_{T#font[52]{t}}'],
-                     CategoryEnum.HIPTT_RESOLVED_DIELECTRON:['#font[52]{ee} resolved high-p_{T#font[52]{t}}'],
-                     CategoryEnum.HIPTT_MERGED_DIELECTRON  :['#font[52]{ee} merged high-p_{T#font[52]{t}}'],
+                     CategoryEnum.HIPTT_DIMUON             :['#font[152]{mm} high-#font[52]{p}_{T#font[52]{t}}'],
+                     CategoryEnum.HIPTT_RESOLVED_DIELECTRON:['#font[52]{ee} resolved high-#font[52]{p}_{T#font[52]{t}}'],
+                     CategoryEnum.HIPTT_MERGED_DIELECTRON  :['#font[52]{ee} merged high-#font[52]{p}_{T#font[52]{t}}'],
                      }.get(category,[])
         else :
-            _text = {ChannelEnum.DIMUON             : ['#font[52]{#mu#mu} channel'    ],
+            _text = {ChannelEnum.DIMUON             : ['#font[152]{mm} channel'    ],
                      ChannelEnum.RESOLVED_DIELECTRON: ['#font[52]{ee} resolved channel'],
                      ChannelEnum.MERGED_DIELECTRON  : ['#font[52]{ee} merged channel'  ]
                      }.get(channel,['All channels'])
@@ -294,6 +294,7 @@ StandardPlotLabels = {
     '%345963%'                       :'WmH H#rightarrow#gamma*#gamma',
     '%345964%'                       :'WpH H#rightarrow#gamma*#gamma',
     '%345965%'                       :'ZH H#rightarrow#gamma*#gamma',
+    '%346525%'                       :'ttH H#rightarrow#gamma*#gamma',
     'Sh_228_eey'                     :'Sherpa ee#gamma%s'%(('' if SHERPA_EE_KFACTOR == 1.0 else ' (#times^{}%.1f)'%(SHERPA_EE_KFACTOR) )),
     'Sh_228_mmy'                     :'Sherpa #mu#mu#gamma%s'%(('' if SHERPA_MUMU_KFACTOR == 1.0 else ' (#times^{}%.1f)'%(SHERPA_MUMU_KFACTOR) )),
     'HiggsToGammaGamma'              :'H#rightarrow#gamma#gamma',

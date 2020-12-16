@@ -6,6 +6,7 @@ import PlotFunctions as plotfunc
 import TAxisFunctions as taxisfunc
 import HggStarHelpers
 import sys
+import PlotText
 
 ROOT.gROOT.SetBatch(True)
 
@@ -31,6 +32,10 @@ nbins = 25 # 25 is nominal; 15 is for high-ptt chi2. 50 is for 1-GeV binning plo
 ###
 ###
 
+color_hyy = ROOT.kAzure-4 # ROOT.kGreen+4
+color_signal = ROOT.kRed
+color_bkg = ROOT.kBlack
+
 cat.setIndex(cat_i)
 channelname = cat.getCurrentLabel()
 pdfi = combinedPdf.getPdf(channelname)
@@ -39,7 +44,7 @@ print 'ChannelName:', channelname, "Index: " , cat_i , ", Pdf: " , pdfi.GetName(
 print ", Data: " , datai.GetName() , ", SumEntries: " , datai.sumEntries()
 
 mass = pdfi.getObservables(datai).first()
-mass.setRange("tmp_signalRegion",120.,130.);
+mass.setRange("fullRegion",105.,160.);
 frame = mass.frame()
 
 datai.plotOn(frame,
@@ -92,8 +97,9 @@ if isElectronChannel :
     total.plotOn(frame,
                  ROOT.RooFit.Normalization(1.0,ROOT.RooAbsReal.RelativeExpected),
                  ROOT.RooFit.Components('hyy'),
-                 ROOT.RooFit.LineColor(ROOT.kGreen+1),
-                 ROOT.RooFit.Range('tmp_signalRegion',False))
+                 ROOT.RooFit.LineColor(color_hyy),
+                 ROOT.RooFit.Range('fullRegion',False)
+                 )
     h_hyyOnly = frame.getCurve()
     h_hyyOnly.SetName('h_hyyOnly')
 
@@ -117,8 +123,9 @@ pvalue_chi2 = ROOT.TMath.Prob(chi2*(nbins-1-ndof),nbins-1-ndof)
 total.plotOn(frame,
              ROOT.RooFit.Normalization(1.0,ROOT.RooAbsReal.RelativeExpected),
              ROOT.RooFit.Components(hyyTopPlot_expression),
-             ROOT.RooFit.LineColor(ROOT.kGreen+1),
-             ROOT.RooFit.Range('tmp_signalRegion',False))
+             ROOT.RooFit.LineColor(color_hyy),
+             ROOT.RooFit.Range('fullRegion',False)
+             )
 h_hyyPlusBkg = frame.getCurve()
 h_hyyPlusBkg.SetName('h_hyy')
 
@@ -126,23 +133,26 @@ h_hyyPlusBkg.SetName('h_hyy')
 total.plotOn(frame,
              ROOT.RooFit.Normalization(1.0,ROOT.RooAbsReal.RelativeExpected),
              ROOT.RooFit.Components(total_expression),
-             ROOT.RooFit.LineColor(ROOT.kRed),
-             ROOT.RooFit.Range('tmp_signalRegion',False))
+             ROOT.RooFit.LineColor(color_signal),
+             ROOT.RooFit.Range('fullRegion',False)
+             )
 h_sig = frame.getCurve()
 
 # just the signal (for the bottom pad)
 total.plotOn(frame,
              ROOT.RooFit.Normalization(1.0,ROOT.RooAbsReal.RelativeExpected),
              ROOT.RooFit.Components(sigPeak_expression),
-             ROOT.RooFit.LineColor(ROOT.kRed),
-             ROOT.RooFit.Range('tmp_signalRegion',False))
+             ROOT.RooFit.LineColor(color_signal),
+             ROOT.RooFit.Range('fullRegion',False)
+             )
 h_sigPeak = frame.getCurve()
 
 # all bakckgrounds (for the top pad) (this is the reference for the residual histogram)
 total.plotOn(frame,
              ROOT.RooFit.Normalization(1.0,ROOT.RooAbsReal.RelativeExpected),
              ROOT.RooFit.Components('background,spSig'),
-             ROOT.RooFit.LineColor(ROOT.kBlue))
+             ROOT.RooFit.Range('fullRegion',False),
+             ROOT.RooFit.LineColor(color_bkg))
 h_bkg = frame.getCurve()
 h_resid = frame.residHist()
 
@@ -161,17 +171,22 @@ h_bkg.SetName('bkg_function')
 h_sig.SetName('h_sig')
 h_sigPeak.SetName('h_sigOnly')
 
-h_data.SetLineWidth(2)
-h_resid.SetLineWidth(2)
-h_sig.SetLineWidth(2)
-h_sigPeak.SetLineWidth(2)
+h_data.SetLineWidth(3)
+h_resid.SetLineWidth(3)
+h_sig.SetLineWidth(3)
+h_sigPeak.SetLineWidth(3)
 h_bkg.SetLineWidth(2)
 h_resid.SetMarkerSize(1)
 h_data.SetMarkerSize(1)
 h_hyyPlusBkg.SetLineWidth(2)
-h_hyyPlusBkg.SetLineStyle(7)
 h_hyyOnly.SetLineWidth(2)
-h_hyyOnly.SetLineStyle(7)
+
+ROOT.gStyle.SetLineStyleString(5,"12 8 12 8") # 5 = h_hyy
+h_hyyPlusBkg.SetLineStyle(5)
+h_hyyOnly.SetLineStyle(5)
+
+ROOT.gStyle.SetLineStyleString(11,"16 20 4 0") # 7 = h_bkg
+h_bkg.SetLineStyle(11)
 
 function = {
     1:'ExpPoly2',
@@ -187,39 +202,42 @@ function = {
 
 h_data.SetTitle('Data')
 h_bkg.SetTitle('Bkg (%s)'%(function))
-h_hyyPlusBkg.SetTitle('Bkg^{ }+^{ }H^{ }#rightarrow^{ }#gamma#gamma')
-h_sig.SetTitle('Bkg^{ }+^{ }Sig^{ }#times^{ }1.46')
+h_hyyPlusBkg.SetTitle(PlotText.bkg_hyy)
+h_sig.SetTitle(PlotText.bkg_sigMuEquals1p46)
 if isElectronChannel :
-    h_sig.SetTitle('Bkg^{ }+^{ }H^{ }#rightarrow^{ }#gamma#gamma^{ }+^{ }Sig^{ }#times^{ }1.46')
+    h_sig.SetTitle(PlotText.bkg_hyy_sigMuEquals1p46)
+
+line = ROOT.TLine(110.45,0,160,0)
+line.SetLineWidth(2)
+line.SetLineStyle(7)
+line.SetLineColor(color_bkg)
 
 can = plotfunc.RatioCanvas('canvas','canvas',500,500)
-plotfunc.AddHistogram(can,h_sig,drawopt='l')
-plotfunc.AddHistogram(can,h_bkg,drawopt='l')
 if isElectronChannel :
     plotfunc.AddHistogram(can,h_hyyPlusBkg,drawopt='l')
+plotfunc.AddHistogram(can,h_bkg,drawopt='l')
+plotfunc.AddHistogram(can,h_sig,drawopt='l')
 plotfunc.AddHistogram(can,h_data,drawopt='pE')
-plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_sigPeak,drawopt='l')
+
+plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_resid,drawopt='pE')
 if isElectronChannel :
     plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_hyyOnly,drawopt='l')
+plotfunc.GetBotPad(can).cd(); line.Draw(); plotfunc.tobject_collector.append(line);
+plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_sigPeak,drawopt='l')
 plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_resid,drawopt='pE')
-plotfunc.FormatCanvasAxes(can)
+plotfunc.FormatCanvasAxes500500(can)
 taxisfunc.SetXaxisRanges(can,110,160)
-plotfunc.SetAxisLabels(can,'m_{ll#gamma} [GeV]','Entries','Residual')
+plotfunc.SetAxisLabels(can,'m_{%s} [GeV]'%(PlotText.llg_subscript),'Entries','Data #minus Bkg')
 
-line = ROOT.TLine(110,0,160,0)
-line.SetLineStyle(2)
-plotfunc.GetBotPad(can).cd()
-line.Draw()
-plotfunc.tobject_collector.append(line)
 
 text_lines = [plotfunc.GetAtlasInternalText(),
               '%s, %s'%(plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0)),
-              '',
+              #'',
               HggStarHelpers.GetPlotText(999,cat_i + 1,forPaper=True)[0],
               ]
-plotfunc.DrawText(can,text_lines,0.61,0.65,0.94,0.90,totalentries=4,textsize=17)
-order = [1,2,0,3] if isElectronChannel else [1,0,2]
-plotfunc.MakeLegend(can,0.20,0.65,0.58,0.90,totalentries=4,textsize=17,ncolumns=1,order=order)
+plotfunc.DrawText(can,text_lines,0.19,0.64,0.58,0.89,totalentries=4,textsize=16)
+order = [1,0,2,3] if isElectronChannel else [0,1,2]
+plotfunc.MakeLegend(can,0.51,0.64,0.95,0.89,totalentries=4,textsize=16,ncolumns=1,order=order)
 
 ranges = plotfunc.AutoFixYaxis(plotfunc.GetTopPad(can))
 plotfunc.SetYaxisRanges(plotfunc.GetTopPad(can),0.001,ranges[1])
@@ -241,8 +259,11 @@ plotfunc.SetYaxisRanges(plotfunc.GetBotPad(can),*bottom_ranges)
 can.Modified()
 can.Update()
 
+plotfunc.GetBotPad(can).RedrawAxis()
+plotfunc.GetTopPad(can).RedrawAxis()
+
 can.Print('plots/c%02d_fullFit.pdf'%(cat_i + 1))
-can.Print('plots/c%02d_fullFit.png'%(cat_i + 1))
+#can.Print('plots/c%02d_fullFit.png'%(cat_i + 1))
 
 # Hard-code pvalue for low-stat categories!
 pvalue_chi2 = {3:-99,
@@ -256,7 +277,7 @@ if pvalue_chi2 >= 0 :
     plotfunc.DrawText(can,['p(#chi^{2}) = %.2f'%(pvalue_chi2)],0.71,0.55,0.95,0.60,totalentries=1,textsize=17)
 
 can.Print('plots/c%02d_fullFit_chi2text.pdf'%(cat_i + 1))
-can.Print('plots/c%02d_fullFit_chi2text.png'%(cat_i + 1))
+#can.Print('plots/c%02d_fullFit_chi2text.png'%(cat_i + 1))
 
 # Add these to the canvas AFTER printing, to get them into the output root file.
 if cat_i in [0,3,6] :
@@ -276,7 +297,7 @@ for i in list(plotfunc.GetTopPad(can).GetListOfPrimitives() +
         tmp.SetName(i.GetName())
         print tmp.GetName()
         tmp.Write()
-    else :
+    elif hasattr(i,'GetName') :
         print i.GetName()
         i.Write()
 

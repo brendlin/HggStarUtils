@@ -6,16 +6,22 @@ import math
 import code
 import numpy as np
 import ctypes
+import PlotText
+import sys
 
 ROOT.gROOT.SetBatch(True)
 
-doMuonOnly = False
-doResOnly = False
-doMerOnly = False
-doEleOnly = False
-doVBFOnly = False
-doHipttOnly = False
-doInclusiveOnly = False
+version = int(sys.argv[1])
+
+binWidth_gev = 1
+# doAll     = (version == 0)
+doMuonOnly  = (version == 1)
+doResOnly   = (version == 2)
+doMerOnly   = (version == 3)
+doEleOnly   = (version == 4)
+doVBFOnly   = (version == 5)
+doHipttOnly = (version == 6)
+doInclusiveOnly = (version == 7)
 
 # Weights that correspond to the data histograms
 weights = []
@@ -118,7 +124,8 @@ def AddPdfs(g1,g2) :
         g1.Add(g2)
     else :
         for i in range(g1.GetN()) :
-            g1.SetPointY(i,g1.GetPointY(i) + g2.GetPointY(i))
+            # There is some very weird binning going on here. Best to use Eval.
+            g1.SetPointY(i,g1.GetPointY(i) + g2.Eval(g1.GetPointX(i)))
     return
 
 
@@ -156,7 +163,7 @@ for i in range(1,10) :
         ScalePdf(bkg,weight)
         bkg.SetNameTitle('background','Bkg')
         bkg.SetMarkerSize(0)
-        bkg.SetLineColor(ROOT.kBlue)
+        #bkg.SetLineColor(ROOT.kBlue)
     else :
         tmp = f.Get('pad_top_bkg_function')
         ScalePdf(tmp,weight)
@@ -165,8 +172,8 @@ for i in range(1,10) :
     if not signal :
         signal = f.Get('pad_top_h_sig').Clone()
         ScalePdf(signal,weight)
-        name = 'Bkg + H#rightarrow#gamma#gamma + Sig (#sigma_{SM}^{ }#times^{ }1.46)'
-        signal.SetNameTitle('signal',name)
+        title = PlotText.bkg_sigMuEquals1p46 if doMuonOnly else PlotText.bkg_hyy_sigMuEquals1p46
+        signal.SetNameTitle('signal',title)
     else :
         tmp = f.Get('pad_top_h_sig')
         ScalePdf(tmp,weight)
@@ -177,6 +184,7 @@ for i in range(1,10) :
         signal_plus_hyy_bot = f.Get('pad_bot_h_sigOnly')
         ScalePdf(signal_plus_hyy_bot,weight)
         signal_plus_hyy_bot.SetNameTitle('signal_plus_hyy_bot','signal')
+        signal_plus_hyy_bot.SetLineWidth(3)
     else :
         tmp = f.Get('pad_bot_h_sigOnly')
         ScalePdf(tmp,weight)
@@ -188,7 +196,7 @@ for i in range(1,10) :
         if tmp :
             bkg_plus_hyy = f.Get('pad_top_h_hyy').Clone()
             ScalePdf(bkg_plus_hyy,weight)
-            bkg_plus_hyy.SetNameTitle('bkg_plus_hyy','Bkg + H#rightarrow#gamma#gamma')
+            bkg_plus_hyy.SetNameTitle('bkg_plus_hyy',PlotText.bkg_hyy)
     else :
         tmp = f.Get('pad_top_h_hyy')
         if tmp :
@@ -210,6 +218,7 @@ for i in range(1,10) :
             AddPdfs(hyy_bot,tmp)
 
 data = ROOT.TGraphAsymmErrors()
+data.SetMarkerSize(1)
 data.SetLineWidth(2)
 data.SetNameTitle('data_all','data')
 
@@ -226,12 +235,15 @@ else :
         data.SetPoint(i,data_hists[0].GetPointX(i),n)
         data.SetPointError(i,0,0,e_down,e_up)
 
-c = plotfunc.RatioCanvas('weighted','weighted',600,500)
+c = plotfunc.RatioCanvas('weighted','weighted',500,500)
 drawopt_pdfs = 'L hist' if issubclass(type(bkg),ROOT.TH1) else 'L'
-plotfunc.AddHistogram(c,bkg,drawopt_pdfs)
 #code.interact(banner='Pausing... Press Contol-D to exit.',local=locals())
 
-plotfunc.AddHistogram(c,bkg_plus_hyy,drawopt_pdfs)
+ROOT.gStyle.SetLineStyleString(5,"12 8 12 8") # 5 = h_hyy
+ROOT.gStyle.SetLineStyleString(11,"16 20 4 0") # 7 = h_bkg
+if not doMuonOnly :
+    plotfunc.AddHistogram(c,bkg_plus_hyy,drawopt_pdfs)
+plotfunc.AddHistogram(c,bkg,drawopt_pdfs)
 plotfunc.AddHistogram(c,signal,drawopt_pdfs)
 plotfunc.AddHistogram(c,data)
 ranges = plotfunc.AutoFixYaxis(plotfunc.GetTopPad(c),minzero=True)
@@ -275,71 +287,89 @@ if True :
 
 
 plotfunc.AddHistogram(plotfunc.GetBotPad(c),ratioplot)
-plotfunc.AddHistogram(plotfunc.GetBotPad(c),signal_plus_hyy_bot,drawopt_pdfs)
+plotfunc.FormatCanvasAxes500500(c)
+line = ROOT.TLine(110.45,0,160,0)
+line.SetLineWidth(2)
+line.SetLineStyle(7)
 if not doMuonOnly :
     plotfunc.AddHistogram(plotfunc.GetBotPad(c),hyy_bot,drawopt_pdfs)
+plotfunc.GetBotPad(c).cd(); line.Draw()
+plotfunc.AddHistogram(plotfunc.GetBotPad(c),signal_plus_hyy_bot,drawopt_pdfs)
 plotfunc.AddHistogram(plotfunc.GetBotPad(c),ratioplot)
-plotfunc.SetAxisLabels(c,'m_{ll#gamma} [GeV]','#scale[1.5]{#Sigma}^{ }weights / 2 GeV','#scale[1.5]{#Sigma}^{ }w #minus Bkg')
+perGeV = '^{ }/^{ }GeV' if (binWidth_gev == 1) else '^{ }/^{ }%d GeV'%(binWidth_gev)
+plotfunc.SetAxisLabels(c,'m_{%s} [GeV]'%(PlotText.llg_subscript),
+                       '#scale[1.5]{#Sigma}^{ }weights%s'%(perGeV),
+                       '#scale[1.5]{#Sigma}^{ }w #minus Bkg')
 
-text = 'ln(1 + S_{90}^{ }/^{ }B_{90}) weighted sum'
+text = 'ln(1^{ }+^{ }S#scale[0.5]{#lower[0.4]{90}}^{ }/^{ }B#scale[0.5]{#lower[0.4]{90}}) weighted sum'
 outname = 'weighted'
 
-taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-3,8) # Use 5 for 1-GeV, 8 for 2-GeV
+taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-3,5 if binWidth_gev == 1 else 8)
 if doMuonOnly :
     outname += '_muonOnly'
-    text += ', Muon Categories'
+    text += ', #font[152]{mm} categories'
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-3,5)
 if doResOnly :
     outname += '_resOnly'
-    text += ', Resolved Electron Categories'
+    text += ', #font[52]{ee} resolved categories'
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-1.999,2)
 if doMerOnly :
     outname += '_mergedOnly'
-    text += ', Merged Electron Categories'
+    text += ', #font[52]{ee} merged categories'
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-1.999,3)
     taxisfunc.SetYaxisRanges(plotfunc.GetTopPad(c),0,15)
 if doEleOnly :
     outname += '_eleOnly'
-    text += ', Electron Categories'
+    text += ', #font[52]{ee} categories'
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-1.999,4)
 if doVBFOnly :
     outname += '_vbfOnly'
-    text += ', VBF Categories'
+    text += ', VBF categories'
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-0.999,2.6)
 if doHipttOnly :
     outname += '_hipttOnly'
-    text += ', high-p_{T#font[52]{t}} Categories'
+    text += ', high-#font[52]{p}_{T#font[52]{t}} categories'
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-1.5,2.0)
 if doInclusiveOnly :
     outname += '_inclusiveOnly'
-    text += ', low-p_{T#font[52]{t}} Categories'
+    text += ', low-#font[52]{p}_{T#font[52]{t}} categories'
     taxisfunc.SetYaxisRanges(plotfunc.GetBotPad(c),-1.999,4.0)
 
 taxisfunc.SetXaxisRanges(c,110,160)
 taxisfunc.SetXaxisRanges(plotfunc.GetBotPad(c),110,160)
-plotfunc.MakeLegend(c,0.50,0.65,0.82,0.90,totalentries=4,textsize=17)
 
-if doVBFOnly or doHipttOnly :
+order = [0,1,2] if doMuonOnly else [1,0,2,3]
+
+if (version == 0) :
+    plotfunc.MakeLegend(c,0.46,0.64,0.82,0.89,totalentries=4,textsize=17,order=order)
+    plotfunc.DrawText(c,[plotfunc.GetAtlasInternalText(),
+                         '%s, %s'%(plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0)),
+                         text,
+                         ],0.20,0.08,0.5,0.29,totalentries=3,textsize=17)
+    ranges = taxisfunc.AutoFixYaxis(plotfunc.GetTopPad(c),
+                                    minzero=True,ignoretext=True,ignorelegend=True)
+    taxisfunc.SetYaxisRanges(plotfunc.GetTopPad(c),0.001,55 if binWidth_gev == 2 else 30)
+elif doVBFOnly or doResOnly :
+    plotfunc.MakeLegend(c,0.54,0.64,0.95,0.89,totalentries=4,textsize=17,order=order)
     plotfunc.DrawText(c,[plotfunc.GetAtlasInternalText(),
                          '%s, %s'%(plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0)),
                          ' ',' ',
-                         text,
-                         ],0.2,0.58,0.5,0.90,totalentries=5,textsize=17)
+                         text],
+                      0.19,0.58,0.5,0.89,totalentries=5,textsize=17)
     ranges = taxisfunc.AutoFixYaxis(plotfunc.GetTopPad(c),minzero=True)
     taxisfunc.SetYaxisRanges(plotfunc.GetTopPad(c),0.001,ranges[1])
 else :
+    plotfunc.MakeLegend(c,0.54,0.64,0.95,0.89,totalentries=4,textsize=17,order=order)
     plotfunc.DrawText(c,[plotfunc.GetAtlasInternalText(),
-                         '%s, %s'%(plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0)),
-                         text,
-                         ],0.2,0.08,0.5,0.29,totalentries=3,textsize=17)
+                         '%s, %s'%(plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0))],
+                      0.19,0.765,0.5,0.89,totalentries=2,textsize=17)
+    ranges = taxisfunc.AutoFixYaxis(plotfunc.GetTopPad(c),minzero=True,ignorelegend=True)
+    taxisfunc.SetYaxisRanges(plotfunc.GetTopPad(c),0.001,ranges[1])
+    plotfunc.DrawText(c,[text],0.19,0.08,0.5,0.15,totalentries=1,textsize=17)
 
+plotfunc.GetTopPad(c).RedrawAxis()
+plotfunc.GetBotPad(c).RedrawAxis()
 
-line = ROOT.TLine(110,0,160,0)
-line.SetLineStyle(2)
-plotfunc.GetBotPad(c).cd()
-line.Draw()
-
-plotfunc.FormatCanvasAxes(c)
 c.Modified()
 c.Update()
 
