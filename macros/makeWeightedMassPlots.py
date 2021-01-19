@@ -37,15 +37,17 @@ mystyle = plotfunc.SetupStyle()
 
 all_weights = [
     -99, # off-by-one stupidity
-    math.log(1 + 61.26 / float( 1745.72 + 0.000) ),
-    math.log(1 + 21.86 / float( 728.9   + 0.489) ),
-    math.log(1 + 29.28 / float( 941.55  + 1.887) ),
-    math.log(1 + 1.28  / float( 5.85    + 0.000) ),
-    math.log(1 + 0.41  / float( 1.62    + 0.009) ),
-    math.log(1 + 0.77  / float( 1.98    + 0.065) ),
-    math.log(1 + 3.85  / float( 33.82   + 0.000) ),
-    math.log(1 + 1.08  / float( 11.82   + 0.024) ),
-    math.log(1 + 2.38  / float( 17.59   + 0.184) ),
+    # We have added additional production modes here too.
+    # Now we have also modified the BR (scale factor 0.9752)
+    math.log(1 + 0.9752 * 1.0162 * 61.26 / float( 1745.72 + 0.000) ),
+    math.log(1 + 0.9752 * 1.0154 * 21.86 / float( 728.9   + 0.489) ),
+    math.log(1 + 0.9752 * 1.0168 * 29.28 / float( 941.55  + 1.887) ),
+    math.log(1 + 0.9752 * 1.0085 * 1.28  / float( 5.85    + 0.000) ),
+    math.log(1 + 0.9752 * 1.0067 * 0.41  / float( 1.62    + 0.009) ),
+    math.log(1 + 0.9752 * 1.0082 * 0.77  / float( 1.98    + 0.065) ),
+    math.log(1 + 0.9752 * 1.0659 * 3.85  / float( 33.82   + 0.000) ),
+    math.log(1 + 0.9752 * 1.0618 * 1.08  / float( 11.82   + 0.024) ),
+    math.log(1 + 0.9752 * 1.0676 * 2.38  / float( 17.59   + 0.184) ),
     ]
 
 def compute_poisson_error(n):

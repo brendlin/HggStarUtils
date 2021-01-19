@@ -426,12 +426,12 @@ def main(options,args) :
         if False :
             # RATIO
             plotfunc.AddRatio(main_can,data_blinded,gen)
-            plotfunc.SetAxisLabels(main_can,'m_{%s} [GeV]'%(PlotText.llg_subscript),'Entries^{ }/^{ }GeV','Ratio')
+            plotfunc.SetAxisLabels(main_can,'m_{%s} [GeV]'%(PlotText.llg_subscript),'Events^{ }/^{ }GeV','Ratio')
             anaplot.RatioRangeAfterBurner(main_can)
         else :
             # PULL
             unused,pull = plotfunc.AddRatio(main_can,data_blinded,gen,divide='pull')
-            plotfunc.SetAxisLabels(main_can,'m_{%s} [GeV]'%(PlotText.llg_subscript),'Entries^{ }/^{ }GeV','Pull')
+            plotfunc.SetAxisLabels(main_can,'m_{%s} [GeV]'%(PlotText.llg_subscript),'Events^{ }/^{ }GeV','Pull')
             nbins = 0
             chi2 = 0
 

@@ -349,12 +349,16 @@ StandardHistFormat = {
     'HGamEventInfoAuxDyn.deltaEta_trktrk_IP'              :[100, -1, 1,'Interaction Point #Delta#eta_{tracks}'],
     'HGamEventInfoAuxDyn.deltaPhi_trktrk_IP'              :[100, -3.03, 3.03,'Interaction Point #Delta#phi_{tracks}'],
     'HGamEventInfoAuxDyn.mu'                              :[ 80,  0,80,'<mu>'],
+    'HGamEventInfoAuxDyn.yyStarCategory'                  :[ 10,  0,10,'Category'],
+    'HGamTruthEventInfoAuxDyn.yyStarChannelSimple'        :[ 15,  0,15,'Simple Channel'],
     # Truth-only variables
     'HGamTruthEventInfoAuxDyn.deltaR_l1l2_h1'             :[100,  0,  2,'Truth #Delta^{}R_{ll}'          ],
     'HGamTruthEventInfoAuxDyn.deltaEta_ll'                :[100, -1,  1,'Truth #Delta#eta_{tracks} [GeV]'],
     'HGamTruthEventInfoAuxDyn.deltaPhi_ll'                :[100, -1,  1,'Truth #Delta#phi_{tracks} [GeV]'],
     'HGamTruthEventInfoAuxDyn.pT_l1_h1/1000.'             :[100,  0,200,'Truth Leading p^{e}_{T} [GeV]'  ],
     'HGamTruthEventInfoAuxDyn.pT_l2_h1/1000.'             :[100,  0, 60,'Truth Sublead p^{e}_{T} [GeV]'  ],
+    'HGamTruthEventInfoAuxDyn.m_yStar_born_h1/1000.'      :[100,  0,120,'Truth Born m_{\gamma*} [GeV]'   ],
+    'HGamTruthEventInfoAuxDyn.m_yStar_undressed_h1/1000.' :[100,  0,120,'Truth Bare m_{\gamma*} [GeV]'   ],
     # Muon variables
     'HGamMuonsAuxDyn.pt[0]/1000.'                         :[100,  0,200,'Leading p^{#mu}_{T} [GeV]'],
     'HGamMuonsAuxDyn.pt[1]/1000.'                         :[100,  0, 60,'Sublead p^{#mu}_{T} [GeV]'],

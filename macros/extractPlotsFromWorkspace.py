@@ -227,7 +227,9 @@ plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_sigPeak,drawopt='l')
 plotfunc.AddHistogram(plotfunc.GetBotPad(can),h_resid,drawopt='pE')
 plotfunc.FormatCanvasAxes500500(can)
 taxisfunc.SetXaxisRanges(can,110,160)
-plotfunc.SetAxisLabels(can,'m_{%s} [GeV]'%(PlotText.llg_subscript),'Entries','Data #minus Bkg')
+perGeV = '^{ }/^{ }GeV' if (nbins == 50) else '^{ }/^{ }2 GeV'
+plotfunc.SetAxisLabels(can,'m_{%s} [GeV]'%(PlotText.llg_subscript),
+                       'Events%s'%(perGeV),'Data #minus Bkg')
 
 
 text_lines = [plotfunc.GetAtlasInternalText(),
