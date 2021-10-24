@@ -12,6 +12,8 @@ from HggStarHelpers import YEAR,GetFbForMCNormalization,ChannelEnum,CategoryEnum
 theyear = YEAR.y2015161718
 fb = GetFbForMCNormalization(theyear)
 
+import PlotText
+
 massOffset = 0.09
 
 # These are the preselection cuts
@@ -20,9 +22,6 @@ cuts = [
     ]
 
 cutcomparisons = {
-    # '#mu#mu#gamma'      :['HGamEventInfoAuxDyn.yyStarChannel == %d'%(CHANNEL.DIMUON              )],
-    # 'ee#gamma resolved' :['HGamEventInfoAuxDyn.yyStarChannel == %d'%(CHANNEL.RESOLVED_DIELECTRON )],
-    # 'ee#gamma merged'   :['HGamEventInfoAuxDyn.yyStarChannel == %d'%(CHANNEL.MERGED_DIELECTRON   )],
     '#font[52]{ee} resolved low-p_{T#font[52]{t}}':['HGamEventInfoAuxDyn.yyStarCategory == %d'%(CategoryEnum.GGF_RESOLVED_DIELECTRON   )],
     '#font[52]{ee} merged high-p_{T#font[52]{t}}':['HGamEventInfoAuxDyn.yyStarCategory == %d'%(CategoryEnum.HIPTT_MERGED_DIELECTRON   )],
     }
@@ -73,7 +72,7 @@ def afterburner(can) :
     for i in f_paramList.readlines() :
         i = i.replace('\n','')
         parameters[i.split()[0]] = float(i.split()[1])
-    
+
     # The numbering of resonance_paramList is offset by 1.
     category = 2
     f_sig = ROOT.TF1('Model',ROOT.dscb,80,180,7)
@@ -107,7 +106,7 @@ def afterburner(can) :
     f_sig2.SetName('signal_function')
     f_sig2.SetTitle('remove')
     f_sig2.SetLineWidth(2)
-    f_sig2.SetLineColor(ROOT.kRed)
+    f_sig2.SetLineColor(ROOT.kRed+1)
 
     c = category - 1
     f_sig2.SetParameter(1,parameters['sigmaCBNom_SM_m125000_c%d'%(c)])
@@ -125,30 +124,24 @@ def afterburner(can) :
     f_sig2.SetParameter(0,hists[0].GetBinWidth(1)/float(integral)) # bin width!!
     plotfunc.AddHistogram(can,f_sig2,drawopt='l')
 
-    plotfunc.MakeLegend(can,0.61,0.74,0.84,0.93,
-                        totalentries=2,ncolumns=1,skip=['remove me'])
+    plotfunc.MakeLegend(can,0.58,0.68,0.81,0.92,
+                        totalentries=2,ncolumns=1,skip=['remove me'],textsize=28)
     entry = ROOT.TH1F('asdf','asdf',1,0,1)
     can.GetPrimitive('legend').AddEntry(entry,'^{ }Model','l')
+    can.GetPrimitive('legend').AddEntry(0,'','')
     #entry = can.GetPrimitive('legend').GetEntry(can.GetName()+'_signal_function')
     #entry.SetObject(h_entry)
     can.GetPrimitive('legend').SetMargin(0.2) # or whatever
 
     can.GetPrimitive(can.GetName()+'_text').Delete()
-    text_lines = [plotfunc.GetAtlasInternalText(status='Simulation Internal')]
+    text_lines = [plotfunc.GetAtlasInternalText(status='Simulation')]
     text_lines += [plotfunc.GetSqrtsText(13)]
-    text_lines += ['H#rightarrow#gamma*#gamma, m_{H} =^{ }125.09 GeV']
-    plotfunc.DrawText(can,text_lines,0.2,0.74,0.5,0.93,totalentries=3)
+    text_lines += [PlotText.hysyllg]
+    text_lines += ['%s^{ }=^{ }125.09 GeV'%(PlotText.mH)]
+    plotfunc.DrawText(can,text_lines,0.18,0.68,0.48,0.92,totalentries=3,textsize=28)
 
     #plotfunc.AutoFixYaxis(can,ignorelegend=True,ignoretext=True)
-    plotfunc.SetYaxisRanges(can,-0.01,0.18)
-
-    can.SetBottomMargin(0.12)
-    for i in can.GetListOfPrimitives() :
-        if hasattr(i,'GetXaxis') :
-            i.GetXaxis().SetTitleOffset(1.05)
-        if hasattr(i,'GetYaxis') :
-            i.GetYaxis().SetTitleOffset(1.40)
-
+    plotfunc.SetYaxisRanges(can,-0.01,0.19)
 
     plotfunc.SetAxisLabels(can,'m_{ll#gamma} [GeV]','Fraction of Events / 0.5 GeV')
     can.RedrawAxis()

@@ -30,6 +30,9 @@ histformat[mll_reco] = [100,0,0.005,histformat[mll_reco][3]]
 dr = 'HGamTruthEventInfoAuxDyn.deltaR_l1l2_h1'
 histformat[dr] = [100,0,0.3,histformat[dr][3]]
 
+# 45 bins between [0.001, ... 25.11886, 31.62278]
+# list( float('%.5f'%(math.pow(10,x/float(10)))) for x in range(-30,16))
+
 rebin = {
     #m_yStar: HggStarHelpers.customRebin(0,3,0.2, 30,1, 40,2, 50,5)
     #m_yStar: [0.001, 0.00112, 0.00126, 0.00141, 0.00158, 0.00178, 0.002, 0.00224, 0.00251, 0.00282, 0.00316, 0.00355, 0.00398, 0.00447, 0.00501, 0.00562, 0.00631, 0.00708, 0.00794, 0.00891, 0.01, 0.01122, 0.01259, 0.01413, 0.01585, 0.01778, 0.01995, 0.02239, 0.02512, 0.02818, 0.03162, 0.03548, 0.03981, 0.04467, 0.05012, 0.05623, 0.0631, 0.07079, 0.07943, 0.08913, 0.1, 0.1122, 0.12589, 0.14125, 0.15849, 0.17783, 0.19953, 0.22387, 0.25119, 0.28184, 0.31623, 0.35481, 0.39811, 0.44668, 0.50119, 0.56234, 0.63096, 0.70795, 0.79433, 0.89125, 1.0, 1.12202, 1.25893, 1.41254, 1.58489, 1.77828, 1.99526, 2.23872, 2.51189, 2.81838, 3.16228, 3.54813, 3.98107, 4.46684, 5.01187, 5.62341, 6.30957, 7.07946, 7.94328, 8.91251, 10.0, 11.22018, 12.58925, 14.12538, 15.84893, 17.78279, 19.95262, 22.38721, 25.11886, 28.18383],
@@ -180,7 +183,7 @@ def afterburner(can) :
 
     plotfunc.SetYaxisRanges(can,0,leftmax)
 
-    plotfunc.SetAxisLabels(can,'Particle-level m_{%s} [GeV]'%(PlotText.ll),'Acceptance #times efficiency')
+    plotfunc.SetAxisLabels(can,'Born-level m_{%s} [GeV]'%(PlotText.ll),'Acceptance #times efficiency')
     can.SetLogx()
     plotfunc.FormatCanvasAxes800600(can,YTitleOffset=1.0,XTitleOffset=1.25)
     can.SetLeftMargin(0.11)
@@ -199,7 +202,7 @@ def afterburner(can) :
     axis.SetTitleFont(43)
     axis.SetTitleSize(32)
     axis.SetTitleOffset(1.0)
-    axis.SetTitle('Events')
+    axis.SetTitle('Events^{ }/^{ }bin')
     can.cd()
     axis.Draw()
     plotfunc.tobject_collector.append(axis)

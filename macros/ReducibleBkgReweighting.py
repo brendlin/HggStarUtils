@@ -446,7 +446,7 @@ def main(options,args) :
             anaplot.RatioRangeAfterBurner(main_can)
             p_chi2 = ROOT.TMath.Prob(chi2, nbins - 1)
 
-        the_text = [plotfunc.GetAtlasInternalText(),
+        the_text = [plotfunc.GetAtlasInternalText(''),
                     plotfunc.GetSqrtsText(13)+', '+plotfunc.GetLuminosityText(139.0),
                     HggStarHelpers.GetPlotText((i_cat+1)%3,i_cat+1,forPaper=True)[0]
                     ]

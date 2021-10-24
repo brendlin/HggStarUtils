@@ -344,7 +344,7 @@ order = [0,1,2] if doMuonOnly else [1,0,2,3]
 
 if (version == 0) :
     plotfunc.MakeLegend(c,0.46,0.64,0.82,0.89,totalentries=4,textsize=17,order=order)
-    plotfunc.DrawText(c,[plotfunc.GetAtlasInternalText(),
+    plotfunc.DrawText(c,[plotfunc.GetAtlasInternalText(''),
                          '%s, %s'%(plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0)),
                          text,
                          ],0.20,0.08,0.5,0.29,totalentries=3,textsize=17)

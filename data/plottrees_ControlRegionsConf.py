@@ -5,6 +5,7 @@
 from HggStarHelpers import YEAR,GetFbForMCNormalization
 from HggStarHelpers import ChannelEnum,CategoryEnum
 import StudyConfSnippets
+import sys
 
 treename = 'CollectionTree'
 
@@ -18,12 +19,13 @@ class REGION :
 ###
 # Change this to check out different channels / years:
 ###
-channel = ChannelEnum.MERGED_DIELECTRON
-category = None
+import sys
+channel = int(sys.argv[1])
+category = int(sys.argv[2])
 region = REGION.SR
-higgsSF = 10
+higgsSF = 1
 theyear = YEAR.y2015161718
-doMesonCuts = True
+doMesonCuts = False
 doDetailedVariables = False
 ##
 # End configuration.
@@ -42,6 +44,7 @@ if region == REGION.SR_VBF :
     plottext = plottext.replace('channel','VBF category')
 
 from HggStarHelpers import StandardSampleMerging as mergesamples
+mergesamples['ttH'] = '%346525%'
 
 if region == REGION.SR_VBF :
     mergesamples = {
@@ -59,10 +62,12 @@ if region == REGION.SR :
 
 cuts = [
     'HGamEventInfoAuxDyn.isPassedObjSelection', # object selection
+    #'HGamEventInfoAuxDyn.m_ll/1000. > 10.',
     ]
 
 if channel :
-    cuts.append('HGamEventInfoAuxDyn.yyStarChannel == %d'%(channel))
+    #cuts.append('HGamEventInfoAuxDyn.yyStarChannel == %d'%(channel))
+    cuts.append('(HGamEventInfoAuxDyn.yyStarChannel == 2 || HGamEventInfoAuxDyn.yyStarChannel == 3)')
 
 if category :
     cuts.append('HGamEventInfoAuxDyn.yyStarCategory == %d'%(category))
@@ -70,8 +75,8 @@ if category :
 if region in [REGION.CR1, REGION.CR2, REGION.SR, REGION.SR_VBF] :
     cuts += [
         '(HGamEventInfoAuxDyn.m_lly > 105000 && HGamEventInfoAuxDyn.m_lly < 160000)',
-        'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly > 0.3', # new cuts
-        'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly > 0.3', # new cuts
+        #'HGamEventInfoAuxDyn.pt_ll/HGamEventInfoAuxDyn.m_lly > 0.3', # new cuts
+        #'HGamPhotonsAuxDyn.pt[0]/HGamEventInfoAuxDyn.m_lly > 0.3', # new cuts
         ]
 
 if region == REGION.CR1 :
@@ -94,9 +99,9 @@ if region == REGION.SR or region == REGION.SR_VBF :
 if doMesonCuts :
     StudyConfSnippets.appendMesonCuts(cuts,channel)
 
-blindcut = [
-    '(HGamEventInfoAuxDyn.m_lly < 120000 || 130000 < HGamEventInfoAuxDyn.m_lly)',
-    ]
+# blindcut = [
+#     '(HGamEventInfoAuxDyn.m_lly > 120000 && 130000 > HGamEventInfoAuxDyn.m_lly)',
+#     ]
 
 ##
 ## Standard Variables
@@ -154,7 +159,7 @@ histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [100,0,200,'m_{ll#gamma} [GeV]']
 from HggStarHelpers import StandardHistRebin as rebin
 
 if region == REGION.SR :
-    histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [55,105,160,'m_{ll#gamma} [GeV]']
+    histformat['HGamEventInfoAuxDyn.m_lly/1000.'] = [55,100,165,'m_{ll#gamma} [GeV]']
     histformat['HGamEventInfoAuxDyn.m_ll/1000.']  = [100,0,13,'m_{ll} [GeV]']
 
 if region == REGION.OBJ_CR :
@@ -184,12 +189,30 @@ def weightscale(tfile) :
     if theyear == YEAR.y2015161718 :
         weight = weight* SF_139fb(tfile)
 
+    if '346525' in tfile.GetName() :
+        print 'Scaling ttH down by 0.796 to account for mll < 10 GeV phase space.'
+        weight = weight * 0.796
+
     return weight * SF_signalxN(tfile,higgsSF)
 
 def afterburner(can) :
     import PlotFunctions as plotfunc
     import TAxisFunctions as taxisfunc
     import ROOT
+
+    # ttH = 0
+    # rest = 0
+    # for i in can.GetListOfPrimitives() :
+    #     if 'ttH' in i.GetName() :
+    #         ttH = i.Integral()
+    #     elif issubclass(type(i),ROOT.TH1) :
+    #         rest = i.Integral()
+    # print 'ttH:',ttH,'rest:',rest,'ratio:',ttH/(rest)
+
+    for i in can.GetListOfPrimitives() :
+        if issubclass(type(i),ROOT.TH1) :
+            rest = i.Integral()
+    print 'rest:',rest
 
     # Fix fb label for 2015-only and 2016-only (see important notes above)
     if theyear in [YEAR.y2015,YEAR.y2016] :
@@ -220,3 +243,14 @@ def afterburner(can) :
             plotfunc.tobject_collector.append(line)
 
     return
+
+histformat['HGamEventInfoAuxDyn.m_ll/1000.']  = [100,0,50,'m_{ll} [GeV]']
+
+variables = [
+    'HGamEventInfoAuxDyn.m_lly/1000.',
+    #'HGamEventInfoAuxDyn.m_ll/1000.',
+    #'HGamEventInfoAuxDyn.cutFlow',
+    # 'HGamEventInfoAuxDyn.pt_lly/1000.',
+    # 'HGamEventInfoAuxDyn.pt_ll/1000.',
+    # 'HGamPhotonsAuxDyn.pt[0]/1000.',
+]

@@ -128,6 +128,10 @@ def afterburner(can) :
     print 'Expecting to open a file bkgParameters.txt'
     bkg_parameters = open ('bkgParameters.txt')
 
+    print 'Expecting to open a workspace called ws.root'
+    wsFile = ROOT.TFile('ws.root','READ')
+    combWS = wsFile.Get('combWS')
+
     function = {
         1:'ExpPoly2',
         2:'Power Law',
@@ -149,7 +153,6 @@ def afterburner(can) :
         }.get(function)
 
     f_bkg = ROOT.TF1(function,expr,mll_range[0],mll_range[1])
-    f_bkg.SetNpx(1000)
     f_bkg.SetName('bkg_function')
     f_bkg.SetTitle('Bkg (%s)'%function)
 
@@ -209,23 +212,33 @@ def afterburner(can) :
         i = i.replace('\n','')
         parameters[i.split()[0]] = float(i.split()[1])
 
+    #combWS.Print()
+    #RooTwoSidedCBShape::pdf__commonSig_muons_incl_2015-18[ m0=muCB_muons_incl_2015-18 sigma=sigmaCB_muons_incl_2015-18 alphaLo=alphaCBLo_muons_incl_2015-18 nLo=nCBLo_muons_incl_2015-18 alphaHi=alphaCBHi_muons_incl_2015-18 nHi=nCBHi_muons_incl_2015-18 ] = 0.00202788
+
+    key = translation['c%s'%category]
+    parameters['ws_sigmaCB'  ] = combWS.function('sigmaCB_%s'  %(key)).getVal()
+    parameters['ws_alphaCBLo'] = combWS.function('alphaCBLo_%s'%(key)).getVal()
+    parameters['ws_alphaCBHi'] = combWS.function('alphaCBH_%s' %(key)).getVal()
+    parameters['ws_nCBLo'    ] = combWS.function('nCBLo_%s'    %(key)).getVal()
+    parameters['ws_nCBHi'    ] = combWS.function('nCBHi_%s'    %(key)).getVal()
+    parameters['ws_muCB'     ] = combWS.function('muCB_%s'     %(key)).getVal()
+
     h_hyyOnly = None
     h_sigOnly = None
     nhyy = None
 
     if doAddSignal :
         f_sig = ROOT.TF1('H#rightarrow#gamma*#gamma parameterization',ROOT.dscb,80,180,7)
-        f_sig.SetNpx(1000)
         f_sig.SetName('signal_function')
 
         # The numbering of resonance_paramList is offset by 1.
         c = category - 1
-        f_sig.SetParameter(1,parameters['sigmaCBNom_SM_m125000_c%d'%(c)])
-        f_sig.SetParameter(2,parameters['alphaCBLo_SM_m125000_c%d'%(c)])
-        f_sig.SetParameter(3,parameters['alphaCBHi_SM_m125000_c%d'%(c)])
-        f_sig.SetParameter(4,parameters['nCBLo_SM_c%d'%(c)])
-        f_sig.SetParameter(5,parameters['nCBHi_SM_c%d'%(c)])
-        f_sig.SetParameter(6,parameters['muCBNom_SM_m125000_c%d'%(c)])
+        f_sig.SetParameter(1,parameters['ws_sigmaCB'  ])
+        f_sig.SetParameter(2,parameters['ws_alphaCBLo'])
+        f_sig.SetParameter(3,parameters['ws_alphaCBHi'])
+        f_sig.SetParameter(4,parameters['ws_nCBLo'    ])
+        f_sig.SetParameter(5,parameters['ws_nCBHi'    ])
+        f_sig.SetParameter(6,parameters['ws_muCB'     ])
 
         # Normalize correctly
         f_sig.SetParameter(0,1)

@@ -207,6 +207,8 @@ h_sig.SetTitle(PlotText.bkg_sigMuEquals1p46)
 if isElectronChannel :
     h_sig.SetTitle(PlotText.bkg_hyy_sigMuEquals1p46)
 
+h_sig.SetTitle(h_sig.GetTitle().replace('1.5','#minus0.78'))
+
 line = ROOT.TLine(110.45,0,160,0)
 line.SetLineWidth(2)
 line.SetLineStyle(7)
@@ -232,7 +234,7 @@ plotfunc.SetAxisLabels(can,'m_{%s} [GeV]'%(PlotText.llg_subscript),
                        'Events%s'%(perGeV),'Data #minus Bkg')
 
 
-text_lines = [plotfunc.GetAtlasInternalText(),
+text_lines = [plotfunc.GetAtlasInternalText(''),
               '%s, %s'%(plotfunc.GetSqrtsText(13),plotfunc.GetLuminosityText(139.0)),
               #'',
               HggStarHelpers.GetPlotText(999,cat_i + 1,forPaper=True)[0],
